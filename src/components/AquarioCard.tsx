@@ -1,17 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
+import { TipoAgua } from "@/types";
 
 type AquarioCardProps = {
     nome: string;
-    tipoAgua: string;
+    tipoAgua: TipoAgua;
     litragem: number;
 }
 
 export default function AquarioCard({nome, tipoAgua, litragem}: AquarioCardProps) {
     return (
-        <View style={[styles.card]}>
-            <Text style={[styles.nome]}>{nome}</Text>
-            <View style={[styles.linha]}>
-                <Text style={[styles.litragem]}>{litragem}L</Text>
+        <View style={styles.card}>
+            <Text style={styles.nome}>{nome}</Text>
+            <View style={styles.linha}>
+                <Text style={styles.litragem}>{litragem}L</Text>
                 <Text style={[styles.etiquetaTipoAgua, tipoAgua === "DOCE" ? styles.etiquetaDoce : styles.etiquetaMarinho]}>
                     {tipoAgua}
                 </Text>
@@ -31,6 +32,7 @@ const styles = StyleSheet.create({
     nome: {
         fontWeight: "bold",
         fontSize: 16,
+        color: "#111827",
     },
     linha: {
         flexDirection: "row",
