@@ -12,7 +12,7 @@ export default function AquarioCard({ aquario, onPress, ativo }: AquarioCardProp
         <Pressable style={[styles.card, ativo && styles.cardAtivo]} onPress={onPress}>
             <View style={styles.linhaNome}>
                 <Text style={styles.nome}>{aquario.nome}</Text>
-                {ativo && <Text style={{color: "#0891b2"}}>✓</Text>}
+                {ativo && <Text style={styles.checkIcone}>✓</Text>}
             </View>
             <View style={styles.linha}>
                 <Text style={styles.litragem}>{aquario.litragem}L</Text>
@@ -69,6 +69,8 @@ const styles = StyleSheet.create({
         gap: 6,
         alignItems: "center",
     },
-
+    checkIcone: {
+        color: "#0891b2",
+    },
 
 })
