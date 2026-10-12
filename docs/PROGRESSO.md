@@ -32,14 +32,16 @@ src/
 │   ├── _layout.tsx            Stack raiz (headerShown: false para o grupo (tabs))
 │   └── (tabs)/
 │       ├── _layout.tsx        Tabs com 5 abas e as cores do protótipo
-│       ├── index.tsx          Dashboard: formulário + lista de aquários + aquário selecionado
-│       ├── parametros.tsx     placeholder
+│       ├── index.tsx          Dashboard (ScrollView): formulário + lista de aquários + aquário selecionado
+│       ├── parametros.tsx     mostra o aquário ativo (via Context)
 │       ├── especies.tsx       placeholder
 │       ├── lembretes.tsx      placeholder
 │       └── perfil.tsx         placeholder
 ├── components/
 │   ├── AquarioCard.tsx        card de um aquário (prop aquario, ativo, onPress)
 │   └── AquarioForm.tsx        formulário de novo aquário (prop onSalvar)
+├── contexts/
+│   └── AquarioContext.tsx     AquarioProvider + useAquarioContext (lista e aquário ativo)
 └── types/                     tipos do domínio (Aquario, NovoAquario, Animal, Planta...)
 ```
 
@@ -124,6 +126,32 @@ src/
 
 **Commits:** `feat: adiciona formulário de novo aquário com validação` · `refactor: extrai formulário de aquário para componente`
 
+## Aula 5: Context, aquário ativo compartilhado entre abas ✅
+
+**Conceitos**
+- Props só passam de pai para filho. Abas são irmãs, então não há props entre elas.
+- **Context**: o estado mora acima de todas as telas que o usam. É parecido com um `@Service` singleton
+  injetado com `@Autowired`.
+- As 4 peças: o tipo (a "interface" do service), `createContext<Tipo | null>(null)`, o **Provider**
+  (um componente com o `useState`, que recebe o `children`) e um hook próprio com `useContext` + `throw` quando for `null`.
+- *Type narrowing*: depois do `if (contexto === null) throw ...`, o TypeScript sabe que o valor não é nulo.
+- O Provider expõe **ações** (`adicionarAquario`, `selecionarAquario`) e não os `set...`.
+- O Provider fica no layout **raiz** para envolver também as telas fora das abas (ex.: o futuro `aquario/[id]`).
+  Regra: o ponto mais baixo da árvore que ainda envolve todas as telas que usam os dados.
+- Desestruturação: `const { aquarios, idSelecionado } = useAquarioContext();`.
+- Teclado no iOS: não fecha sozinho, e o teclado numérico não tem tecla "OK". Use `Keyboard.dismiss()`.
+- `ScrollView`: o `style` é a janela, e o `contentContainerStyle` é o conteúdo (o `gap` e o `padding` vão nele).
+  As props `keyboardDismissMode="on-drag"` e `keyboardShouldPersistTaps="handled"` tratam o teclado.
+- Testar no celular de verdade (Expo Go no iPhone) revela problemas que a web não mostra.
+
+**O que foi feito**
+- `src/contexts/AquarioContext.tsx` com `AquarioProvider` e `useAquarioContext`. A lista inicial e o estado saíram do Dashboard.
+- `AquarioProvider` no `src/app/_layout.tsx`.
+- A aba Parâmetros mostra "Monitorando: [nome]" do aquário escolhido no Dashboard.
+- O teclado fecha ao salvar (só se os dados forem válidos), e o Dashboard rola.
+
+**Commits:** `feat: compartilha aquário ativo entre abas com Context` · `fix: fecha o teclado ao salvar e permite rolar o Dashboard`
+
 ---
 
 ## Pendências opcionais
@@ -131,6 +159,7 @@ src/
 - Mensagem de erro no `AquarioForm` (estado `erro` + `&&`, em vermelho `#dc2626`).
 - Ícones nas abas (`npx expo install @expo/vector-icons`, opção `tabBarIcon`).
 - `aquariosIniciais`: um campo por linha, e dados realistas (o aquário de corais não deveria ter plantas).
+- Aba Parâmetros: mensagem "Nenhum aquário ativo..." quando não houver aquário selecionado.
 
 ## Pergunta em aberto
 
@@ -139,7 +168,6 @@ src/
 
 ## Próximos passos
 
-- **Aquário ativo compartilhado entre as abas** (Context): a aba Parâmetros precisa saber qual aquário está ativo.
 - **Integração com a API**: criar `src/services/aquarioService.ts` (como a camada de service do Spring),
   com `fetch`, `async/await` e estados de carregando e erro. O formulário e os cards não mudam.
 - *Bottom sheet* para o formulário, como no protótipo.

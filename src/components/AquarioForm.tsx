@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
+import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-native";
 import { NovoAquario, TipoAgua } from "@/types";
 
 type AquarioFormProps = {
@@ -21,6 +21,8 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
         if (nome.trim() === "" || !(litros > 0)) {
             return;
         }
+        
+        Keyboard.dismiss();
 
         const novoAquario: NovoAquario = {
             nome: nome.trim(),

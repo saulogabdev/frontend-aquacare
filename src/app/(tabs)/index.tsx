@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import AquarioCard from "@/components/AquarioCard";
 import AquarioForm from "@/components/AquarioForm";
@@ -9,20 +9,22 @@ export default function Index() {
   const aquarioSelecionado = aquarios.find((a) => a.idAquario === idSelecionado);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <Text>AQUARIO SELECIONADO: {aquarioSelecionado?.nome}</Text>
       <AquarioForm onSalvar={adicionarAquario} />
       {aquarios.map((aquario) => (
         <AquarioCard key={aquario.idAquario} aquario={aquario} onPress={() => selecionarAquario(aquario.idAquario)} ativo={aquario.idAquario === idSelecionado} />
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
+  },
+  conteudo: {
     gap: 12,
     padding: 20,
-  }
+  },
 });
