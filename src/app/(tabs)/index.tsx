@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text } from "react-native";
 
 import AquarioCard from "@/components/AquarioCard";
 import AquarioForm from "@/components/AquarioForm";
