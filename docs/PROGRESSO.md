@@ -33,15 +33,17 @@ src/
 │   └── (tabs)/
 │       ├── _layout.tsx        Tabs com 5 abas e as cores do protótipo
 │       ├── index.tsx          Dashboard (ScrollView): formulário + lista de aquários + aquário selecionado
-│       ├── parametros.tsx     mostra o aquário ativo (via Context)
+│       ├── parametros.tsx     aquário ativo + RegistroForm + contador de registros (ScrollView)
 │       ├── especies.tsx       placeholder
 │       ├── lembretes.tsx      placeholder
 │       └── perfil.tsx         placeholder
 ├── components/
 │   ├── AquarioCard.tsx        card de um aquário (prop aquario, ativo, onPress)
-│   └── AquarioForm.tsx        formulário de novo aquário (prop onSalvar)
+│   ├── AquarioForm.tsx        formulário de novo aquário (prop onSalvar)
+│   └── RegistroForm.tsx       formulário de medições (exporta o tipo MedicoesRegistro)
 ├── contexts/
-│   └── AquarioContext.tsx     AquarioProvider + useAquarioContext (lista e aquário ativo)
+│   ├── AquarioContext.tsx     AquarioProvider + useAquarioContext (lista e aquário ativo)
+│   └── RegistroContext.tsx    RegistroProvider + useRegistroContext (lista de registros)
 └── types/                     tipos do domínio (Aquario, NovoAquario, Animal, Planta...)
 ```
 
@@ -152,6 +154,77 @@ src/
 
 **Commits:** `feat: compartilha aquário ativo entre abas com Context` · `fix: fecha o teclado ao salvar e permite rolar o Dashboard`
 
+## Aula 6: Registro de parâmetros (Parte A) ✅
+
+**Conceitos**
+- Campos opcionais `number | null`: vazio vira `null` ("não medi"), nunca `0` ("medi e deu zero").
+  Em Java, é a diferença entre `int` e `Integer`. Converter `null` em `0` gera um diagnóstico falso.
+- Vírgula decimal: `"7,2"` vira `NaN`, então troque por ponto com `.replace(",", ".")` antes do `Number()`.
+  O `keyboardType="decimal-pad"` mostra a vírgula no teclado.
+- Função auxiliar fora do componente (`paraNumero(texto): number | null`), como um método `static` utilitário.
+- Um Context por assunto (`RegistroContext` separado do `AquarioContext`), como services separados no Spring.
+- O formulário entrega só o que sabe (as medições). A **tela** completa com o `idAquario` (do aquário ativo)
+  e a `dataHora`. Se o formulário lesse o Context, ele teria uma dependência escondida e não seria reutilizável.
+- `Omit` com várias chaves: `Omit<NovoRegistroParametro, "idAquario" | "dataHora">`, exportado como `MedicoesRegistro`.
+  Um arquivo pode ter o `export default` (o componente) e exports nomeados (o tipo).
+- `??` (se for `null`, use outro valor). Depois de um `if (x === null) return`, o `?? 0` é desnecessário (type narrowing).
+
+**O que foi feito**
+- `RegistroContext` (lista em memória) e `RegistroProvider` no layout raiz, dentro do `AquarioProvider`.
+- `RegistroForm` com pH, temperatura e amônia (obrigatórios), nitrito e nitrato (opcionais), com unidades nos placeholders.
+- A aba Parâmetros salva o registro do aquário ativo e mostra quantos registros existem.
+- O Claude fez, com autorização: mover o `idAquario` e a `dataHora` para a tela, tirar os `?? 0`,
+  o `Keyboard.dismiss()`, as unidades e a limpeza de imports.
+
+**Commit:** `feat: adiciona registro de parâmetros do aquário ativo`
+
+**Parte B (não feita):** histórico dos registros. Com a API, ele virá de `GET /registro/aquario/{id}`.
+
+---
+
+## API do backend (recebida em 13/10/2026)
+
+Referência: https://claude.ai/artifact/Nu6g1J7YPZsNgsksaZMp7o (gerada do OpenAPI do backend).
+Cópia da especificação: [`docs/api-spec.json`](api-spec.json).
+Base URL: `http://localhost:8080` (roda na máquina do Brayan). Swagger UI em `/swagger-ui.html`.
+
+**Autenticação:** só 4 rotas são públicas: `POST /usuarios/login` (`{email, senha}`, devolve uma string, provavelmente o token),
+`/usuarios/cadastrar` (`{email, senha, nome}`), `/usuarios/recuperar-senha` (`{email}`) e `/usuarios/redefinir-senha` (`{token, novaSenha}`).
+**Todas as outras exigem** `Authorization: Bearer <token>`. Criar, editar e excluir em `/animal` e `/planta` exige ADMIN.
+Consequência: **o login precisa vir antes** de listar aquários pela API.
+
+**Rotas principais**
+
+| Área | Rotas |
+| --- | --- |
+| Aquário | `GET /aquarios/meus`, `POST /aquarios/cadastrar`, `GET/PUT/DELETE /aquarios/{id}` |
+| Diagnóstico | `GET /aquarios/{id}/diagnostico` → `{estado: SAUDAVEL\|ATENCAO\|CRITICO, alertas: [{mensagem, severidade: ATENCAO\|CRITICO}]}` |
+| | `GET /aquarios/{id}/parametros-ideais` → `{phMin, phMax, tempMin, tempMax}` · `GET /aquarios/{id}/especies-recomendadas` |
+| Registro | `POST /registro/cadastrar` (**devolve a lista de alertas**), `GET /registro/aquario/{id}`, `GET/PUT/DELETE /registro/{id}` |
+| Espécies | `/animal/...` e `/planta/...`: `listar-todos`, `{id}`, `nome-popular/{nome}`, `nome-cientifico/{nome}`, filtros |
+| Associações | `/animal-aquario/associar`, `/animal-aquario/aquario/{id}`, idem `/planta-aquario` |
+| Outros | `/equipamento`, `/lembrete` (`meus`, `aquario/{id}`), `/dispositivo`, `PUT/DELETE /usuarios/{id}` |
+
+**Diferenças entre `src/types` e a API (ainda não corrigidas no app)**
+
+| Onde | No app | Na API |
+| --- | --- | --- |
+| Aquário, ID | `idAquario` | `id` |
+| Aquário, plantas | `nivelPlanta`: `NENHUM\|BAIXO\|MEDIO\|ALTO` | `nivelPlantas`: `BAIXA\|MEDIA\|ALTA` (sem "nenhum") |
+| Animal, região de nado | `SUPERFICIE` | `TOPO` |
+| Animal, porte | `porte` | não existe; tem `tamanhoMedio` (número) |
+| Animal, campos novos | — | `padraoTerritorial`, `lc50Amonia`, `lc50Nitrito`, `quantidadeMinimaGrupo` |
+| Planta, dificuldade | `MEDIA` | `MEDIO` |
+| Equipamento, tipo | tem `OUTRO` | não tem `OUTRO` |
+| Lembrete | `isConcluido` | `concluido` + `notificado` |
+| Animal/planta no aquário | objeto inteiro | só `idAnimal` / `idPlanta` |
+
+Se o app ler um campo com o nome errado, o valor vem `undefined` sem erro nenhum: a tela só aparece vazia.
+
+**Problema na documentação:** em todos os `POST`/`PUT`, o corpo aparece como `DadosRequest`, com os campos do registro.
+É uma colisão de nomes no springdoc (várias classes `DadosRequest`). Só o corpo do registro é confiável.
+Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou nomes únicos (`AquarioRequest`...).
+
 ---
 
 ## Pendências opcionais
@@ -161,19 +234,26 @@ src/
 - `aquariosIniciais`: um campo por linha, e dados realistas (o aquário de corais não deveria ter plantas).
 - Aba Parâmetros: mensagem "Nenhum aquário ativo..." quando não houver aquário selecionado.
 
-## Pergunta em aberto
+## Perguntas em aberto (responder antes da próxima aula)
 
-- **O backend em Spring Boot já tem os endpoints de aquário funcionando?** Isso define a ordem das próximas aulas.
-  - Em 12/10/2026: ainda sem resposta do parceiro do backend. Seguimos sem API (dados em memória).
+1. **O Saulo consegue rodar o backend no próprio computador?** (repositório, Docker, MySQL). O iPhone não acessa
+   `localhost` do computador: vai ser preciso usar o IP do computador na rede Wi-Fi.
+2. **Perguntar ao Brayan:** quais campos o `POST /aquarios/cadastrar` recebe? O login devolve só o texto do token ou um JSON?
+3. **Decisão:** o app segue a API, ou a API muda para seguir o artigo? Recomendação: o app segue a API, e só as
+   diferenças de **regra** vão para o Brayan (aquário sem plantas, equipamento `OUTRO`).
 
 ## Próximos passos
 
-- **Integração com a API**: criar `src/services/aquarioService.ts` (como a camada de service do Spring),
-  com `fetch`, `async/await` e estados de carregando e erro. O formulário e os cards não mudam.
-- *Bottom sheet* para o formulário, como no protótipo.
-- Depois, na ordem do roteiro original:
-  1. Login e cadastro com JWT, e rotas protegidas (redirecionar para `/login` no `_layout.tsx`).
-  2. Enciclopédia de espécies: busca, filtros e tela de detalhe.
-  3. Registro de parâmetros e exibição do diagnóstico e dos alertas que vêm do backend (o diferencial do TCC).
-  4. Gráficos da variação de cada parâmetro ao longo dos dias.
-  5. Lembretes com notificações push (`expo-notifications`; o token vai para `Dispositivo_Notificacao`).
+**Aula 7, integração com a API** (depois das respostas acima):
+1. Alinhar os tipos de `src/types` com a API (o TypeScript aponta todos os lugares que precisam mudar).
+2. Camada de service: `src/services/` com `fetch` e `async/await` (como o service do Spring). Os componentes não mudam.
+3. Login: tela fora das abas, guardar o token, enviar `Authorization: Bearer` e redirecionar para `/login` no `_layout.tsx`.
+4. Listar os aquários com `GET /aquarios/meus`, com estados de carregando e erro.
+5. Salvar o registro com `POST /registro/cadastrar` e mostrar os alertas devolvidos.
+
+Depois:
+- Histórico de registros (`GET /registro/aquario/{id}`) e diagnóstico (`GET /aquarios/{id}/diagnostico`), o diferencial do TCC.
+- *Bottom sheet* para os formulários, como no protótipo.
+- Enciclopédia de espécies: busca, filtros e tela de detalhe.
+- Gráficos da variação de cada parâmetro ao longo dos dias.
+- Lembretes com notificações push (`expo-notifications`; o token vai para `/dispositivo/cadastrar`).

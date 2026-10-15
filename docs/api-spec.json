@@ -1,0 +1,2641 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "OpenAPI definition",
+  "version": "v0"
+ },
+ "servers": [
+  {
+   "url": "http://localhost:8080",
+   "description": "Generated server url"
+  }
+ ],
+ "paths": {
+  "/usuarios/{id}": {
+   "put": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "atualizar",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AtualizarContaRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "excluir",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/registro/{id}": {
+   "get": {
+    "tags": [
+     "registro-parametro-controller"
+    ],
+    "operationId": "buscarPorId",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/RegistroParametroResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "registro-parametro-controller"
+    ],
+    "operationId": "atualizar_1",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "registro-parametro-controller"
+    ],
+    "operationId": "excluir_1",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/planta/{id}": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "buscarPorId_1",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/Planta"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "atualizar_2",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "excluir_2",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/planta-aquario/{id}": {
+   "get": {
+    "tags": [
+     "planta-aquario-controller"
+    ],
+    "operationId": "buscarPorId_2",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/PlantaAquarioResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "planta-aquario-controller"
+    ],
+    "operationId": "atualizar_3",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "planta-aquario-controller"
+    ],
+    "operationId": "excluir_3",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/lembrete/{id}": {
+   "get": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "buscraPorId",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/LembreteResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "atualizae",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "excluir_4",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/equipamento/{id}": {
+   "get": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "buscarPorId_3",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/EquipamentoResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "atualizar_4",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "excluir_5",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/dispositivo/{id}": {
+   "get": {
+    "tags": [
+     "dispositivo-notificacao-controller"
+    ],
+    "operationId": "buscarPorId_4",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/DispositivoNotificacaoResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "dispositivo-notificacao-controller"
+    ],
+    "operationId": "atualizar_5",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "dispositivo-notificacao-controller"
+    ],
+    "operationId": "excluir_6",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/aquarios/{id}": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "buscarPorId_5",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/AquarioResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "atualizar_6",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "excluir_7",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/animal/{id}": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "buscarPorId_6",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/Animal"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "atualizar_7",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "excluir_8",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/animal-aquario/{id}": {
+   "get": {
+    "tags": [
+     "animal-aquario-controller"
+    ],
+    "operationId": "buscarPorId_7",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/AnimalAquarioResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "animal-aquario-controller"
+    ],
+    "operationId": "atualizar_8",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "animal-aquario-controller"
+    ],
+    "operationId": "excluir_9",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/usuarios/redefinir-senha": {
+   "post": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "redifinirSenha",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RedefinirSenhaRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/usuarios/recuperar-senha": {
+   "post": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "recuperarSenha",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EmailRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/usuarios/login": {
+   "post": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "login",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/usuarios/cadastrar": {
+   "post": {
+    "tags": [
+     "usuario-controller"
+    ],
+    "operationId": "cadastrar",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CadastroRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/registro/cadastrar": {
+   "post": {
+    "tags": [
+     "registro-parametro-controller"
+    ],
+    "operationId": "cadastrar_1",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Alerta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/cadastrar": {
+   "post": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "cadastrar_2",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/planta-aquario/associar": {
+   "post": {
+    "tags": [
+     "planta-aquario-controller"
+    ],
+    "operationId": "associar",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/PlantaAquario"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/lembrete/cadastrar": {
+   "post": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "cadastrar_3",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/Lembrete"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/equipamento/cadastrar": {
+   "post": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "cadastrar_4",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/EquipamentoResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/dispositivo/cadastrar": {
+   "post": {
+    "tags": [
+     "dispositivo-notificacao-controller"
+    ],
+    "operationId": "cadastrar_5",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/DispositivoNotificacao"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/cadastrar": {
+   "post": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "cadastrar_6",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/animal/cadastrar": {
+   "post": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "cadastrar_7",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    }
+   }
+  },
+  "/animal-aquario/associar": {
+   "post": {
+    "tags": [
+     "animal-aquario-controller"
+    ],
+    "operationId": "associar_1",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DadosRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/AnimalAquario"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/registro/aquario/{id}": {
+   "get": {
+    "tags": [
+     "registro-parametro-controller"
+    ],
+    "operationId": "buscarPorIdAquario",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/RegistroParametroResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/nome-popular/{nome}": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "buscarPorNomePopular",
+    "parameters": [
+     {
+      "name": "nome",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Planta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/nome-cientifico/{nome}": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "buscarPorNomeCientifico",
+    "parameters": [
+     {
+      "name": "nome",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Planta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/listar-todos": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "listarTodos",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Planta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/iluminacao/{iluminacao}": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "buscarPorIluminacao",
+    "parameters": [
+     {
+      "name": "iluminacao",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "BAIXA",
+        "MEDIA",
+        "ALTA"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Planta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta/dificuldade/{dificuldade}": {
+   "get": {
+    "tags": [
+     "planta-controller"
+    ],
+    "operationId": "buscarPorDificuldade",
+    "parameters": [
+     {
+      "name": "dificuldade",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "FACIL",
+        "MEDIO",
+        "DIFICIL"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Planta"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/planta-aquario/aquario/{id}": {
+   "get": {
+    "tags": [
+     "planta-aquario-controller"
+    ],
+    "operationId": "listarPorIdAqauario",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PlantaAquarioResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/lembrete/meus": {
+   "get": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "buscarPorIdUsuario",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/LembreteResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/lembrete/aquario/{id}": {
+   "get": {
+    "tags": [
+     "lembrete-controller"
+    ],
+    "operationId": "buscarPorIdAquario_1",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/LembreteResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/equipamento/listar-todos": {
+   "get": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "listarTodos_1",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/EquipamentoResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/equipamento/aquario/{id}": {
+   "get": {
+    "tags": [
+     "equipamento-controller"
+    ],
+    "operationId": "buscarPorIdAquario_2",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/EquipamentoResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/dispositivo/meus": {
+   "get": {
+    "tags": [
+     "dispositivo-notificacao-controller"
+    ],
+    "operationId": "buscarMeusDispositivos",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/DispositivoNotificacaoResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/{id}/parametros-ideais": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "recomendarParametros",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/ParametrosIdeais"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/{id}/especies-recomendadas": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "recomendarEspecies",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/{id}/diagnostico": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "diagnosticar",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "$ref": "#/components/schemas/Diagnostico"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/meus": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "listarPorUsuario",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AquarioResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/aquarios/listar-todos": {
+   "get": {
+    "tags": [
+     "aquario-controller"
+    ],
+    "operationId": "listarTodos_2",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AquarioResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal/regiao-nado/{regiaoNado}": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "buscarPorRegiaoDeNado",
+    "parameters": [
+     {
+      "name": "regiaoNado",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "FUNDO",
+        "MEIO",
+        "TOPO"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal/nome-popular/{nome}": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "buscarPorNomePopular_1",
+    "parameters": [
+     {
+      "name": "nome",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal/nome-cientifico/{nome}": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "buscarPorNomeCientifico_1",
+    "parameters": [
+     {
+      "name": "nome",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal/listar-todos": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "listarTodos_3",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal/agressividade/{agressividade}": {
+   "get": {
+    "tags": [
+     "animal-controller"
+    ],
+    "operationId": "buscarPorAgressividade",
+    "parameters": [
+     {
+      "name": "agressividade",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "PACIFICO",
+        "SEMI_AGRESSIVO",
+        "AGRESSIVO"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Animal"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/animal-aquario/aquario/{id}": {
+   "get": {
+    "tags": [
+     "animal-aquario-controller"
+    ],
+    "operationId": "buscarPorIdAquario_3",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "format": "int32"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "*/*": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AnimalAquarioResponse"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AtualizarContaRequest": {
+    "type": "object",
+    "properties": {
+     "nome": {
+      "type": "string"
+     },
+     "email": {
+      "type": "string"
+     }
+    }
+   },
+   "DadosRequest": {
+    "type": "object",
+    "properties": {
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "ph": {
+      "type": "number",
+      "format": "float"
+     },
+     "temperatura": {
+      "type": "number",
+      "format": "float"
+     },
+     "amonia": {
+      "type": "number",
+      "format": "float"
+     },
+     "nitrato": {
+      "type": "number",
+      "format": "float"
+     },
+     "nitrito": {
+      "type": "number",
+      "format": "float"
+     },
+     "gh": {
+      "type": "number",
+      "format": "float"
+     },
+     "kh": {
+      "type": "number",
+      "format": "float"
+     },
+     "co2": {
+      "type": "number",
+      "format": "float"
+     },
+     "salinidade": {
+      "type": "number",
+      "format": "float"
+     },
+     "calcio": {
+      "type": "number",
+      "format": "float"
+     },
+     "magnesio": {
+      "type": "number",
+      "format": "float"
+     }
+    }
+   },
+   "RedefinirSenhaRequest": {
+    "type": "object",
+    "properties": {
+     "token": {
+      "type": "string"
+     },
+     "novaSenha": {
+      "type": "string"
+     }
+    }
+   },
+   "EmailRequest": {
+    "type": "object",
+    "properties": {
+     "email": {
+      "type": "string"
+     }
+    }
+   },
+   "LoginRequest": {
+    "type": "object",
+    "properties": {
+     "email": {
+      "type": "string"
+     },
+     "senha": {
+      "type": "string"
+     }
+    }
+   },
+   "CadastroRequest": {
+    "type": "object",
+    "properties": {
+     "email": {
+      "type": "string"
+     },
+     "senha": {
+      "type": "string"
+     },
+     "nome": {
+      "type": "string"
+     }
+    }
+   },
+   "Alerta": {
+    "type": "object",
+    "properties": {
+     "mensagem": {
+      "type": "string"
+     },
+     "severidade": {
+      "type": "string",
+      "enum": [
+       "ATENCAO",
+       "CRITICO"
+      ]
+     }
+    }
+   },
+   "Aquario": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "usuario": {
+      "$ref": "#/components/schemas/Usuario"
+     },
+     "nome": {
+      "type": "string"
+     },
+     "litragem": {
+      "type": "number",
+      "format": "float"
+     },
+     "tipoAgua": {
+      "type": "string",
+      "enum": [
+       "DOCE",
+       "MARINHO"
+      ]
+     },
+     "nivelPlantas": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "dataMontagem": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "injecaoCO2": {
+      "type": "boolean"
+     },
+     "ciclado": {
+      "type": "boolean"
+     }
+    }
+   },
+   "DispositivoNotificacao": {
+    "type": "object",
+    "properties": {
+     "idDispositivo": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "usuario": {},
+     "expoPushToken": {
+      "type": "string"
+     }
+    }
+   },
+   "Lembrete": {
+    "type": "object",
+    "properties": {
+     "idLembrete": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "usuario": {},
+     "aquario": {},
+     "titulo": {
+      "type": "string"
+     },
+     "dataHoraLembrete": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "notificado": {
+      "type": "boolean"
+     },
+     "concluido": {
+      "type": "boolean"
+     }
+    }
+   },
+   "Planta": {
+    "type": "object",
+    "properties": {
+     "idPlanta": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "nomePopular": {
+      "type": "string"
+     },
+     "nomeCientifico": {
+      "type": "string"
+     },
+     "descricao": {
+      "type": "string"
+     },
+     "dificuldade": {
+      "type": "string",
+      "enum": [
+       "FACIL",
+       "MEDIO",
+       "DIFICIL"
+      ]
+     },
+     "iluminacao": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "co2Necessario": {
+      "type": "boolean"
+     },
+     "crescimento": {
+      "type": "string"
+     },
+     "alturaCm": {
+      "type": "number",
+      "format": "float"
+     },
+     "tempMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "tempMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "phMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "phMax": {
+      "type": "number",
+      "format": "float"
+     }
+    }
+   },
+   "PlantaAquario": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "planta": {
+      "$ref": "#/components/schemas/Planta"
+     },
+     "aquario": {
+      "$ref": "#/components/schemas/Aquario"
+     },
+     "quantidade": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "dataPlantio": {
+      "type": "string",
+      "format": "date"
+     }
+    }
+   },
+   "Usuario": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "email": {
+      "type": "string"
+     },
+     "nome": {
+      "type": "string"
+     },
+     "dataCadastro": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "role": {
+      "type": "string",
+      "enum": [
+       "USER",
+       "ADMIN"
+      ]
+     },
+     "aquarios": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Aquario"
+      }
+     },
+     "lembretes": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Lembrete"
+      }
+     },
+     "dispositivos": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/DispositivoNotificacao"
+      }
+     }
+    }
+   },
+   "EquipamentoResponse": {
+    "type": "object",
+    "properties": {
+     "idEquipamento": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "tipo": {
+      "type": "string",
+      "enum": [
+       "TERMOSTATO",
+       "FILTRO",
+       "ILUMINACAO"
+      ]
+     },
+     "nome": {
+      "type": "string"
+     },
+     "modelo": {
+      "type": "string"
+     },
+     "marca": {
+      "type": "string"
+     },
+     "potenciaWatts": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "vazaoLH": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "lumens": {
+      "type": "number",
+      "format": "float"
+     }
+    }
+   },
+   "Animal": {
+    "type": "object",
+    "properties": {
+     "idAnimal": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "nomePopular": {
+      "type": "string"
+     },
+     "nomeCientifico": {
+      "type": "string"
+     },
+     "descricao": {
+      "type": "string"
+     },
+     "tempMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "tempMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "phMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "phMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "ghMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "ghMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "salinidadeMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "salinidadeMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "agressividade": {
+      "type": "string",
+      "enum": [
+       "PACIFICO",
+       "SEMI_AGRESSIVO",
+       "AGRESSIVO"
+      ]
+     },
+     "padraoTerritorial": {
+      "type": "string",
+      "enum": [
+       "NAO_TERRITORIAL",
+       "TERRITORIAL"
+      ]
+     },
+     "tamanhoMedio": {
+      "type": "number",
+      "format": "float"
+     },
+     "regiaoNado": {
+      "type": "string",
+      "enum": [
+       "FUNDO",
+       "MEIO",
+       "TOPO"
+      ]
+     },
+     "habitoAlimentar": {
+      "type": "string"
+     },
+     "lc50Amonia": {
+      "type": "number",
+      "format": "float"
+     },
+     "lc50Nitrito": {
+      "type": "number",
+      "format": "float"
+     },
+     "sensibilidadeAmonia": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "sensibilidadeNitrito": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "sensibilidadeNitrato": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "quantidadeMinimaGrupo": {
+      "type": "integer",
+      "format": "int32"
+     }
+    }
+   },
+   "AnimalAquario": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "animal": {
+      "$ref": "#/components/schemas/Animal"
+     },
+     "aquario": {
+      "$ref": "#/components/schemas/Aquario"
+     },
+     "quantidade": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "dataAdicao": {
+      "type": "string",
+      "format": "date"
+     }
+    }
+   },
+   "RegistroParametroResponse": {
+    "type": "object",
+    "properties": {
+     "idParametro": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "dataHora": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "ph": {
+      "type": "number",
+      "format": "float"
+     },
+     "temperatura": {
+      "type": "number",
+      "format": "float"
+     },
+     "amonia": {
+      "type": "number",
+      "format": "float"
+     },
+     "nitrato": {
+      "type": "number",
+      "format": "float"
+     },
+     "nitrito": {
+      "type": "number",
+      "format": "float"
+     },
+     "gh": {
+      "type": "number",
+      "format": "float"
+     },
+     "kh": {
+      "type": "number",
+      "format": "float"
+     },
+     "co2": {
+      "type": "number",
+      "format": "float"
+     },
+     "salinidade": {
+      "type": "number",
+      "format": "float"
+     },
+     "calcio": {
+      "type": "number",
+      "format": "float"
+     },
+     "magnesio": {
+      "type": "number",
+      "format": "float"
+     }
+    }
+   },
+   "PlantaAquarioResponse": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idPlanta": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "quantidade": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "dataPlantio": {
+      "type": "string",
+      "format": "date"
+     }
+    }
+   },
+   "LembreteResponse": {
+    "type": "object",
+    "properties": {
+     "idLembrete": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "titulo": {
+      "type": "string"
+     },
+     "dataHoraLembrete": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "concluido": {
+      "type": "boolean"
+     },
+     "notificado": {
+      "type": "boolean"
+     }
+    }
+   },
+   "DispositivoNotificacaoResponse": {
+    "type": "object",
+    "properties": {
+     "idDispositivo": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "expoPushToken": {
+      "type": "string"
+     }
+    }
+   },
+   "AquarioResponse": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "nome": {
+      "type": "string"
+     },
+     "litragem": {
+      "type": "number",
+      "format": "float"
+     },
+     "tipoAgua": {
+      "type": "string",
+      "enum": [
+       "DOCE",
+       "MARINHO"
+      ]
+     },
+     "nivelPlantas": {
+      "type": "string",
+      "enum": [
+       "BAIXA",
+       "MEDIA",
+       "ALTA"
+      ]
+     },
+     "dataMontagem": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isCiclado": {
+      "type": "boolean"
+     },
+     "injecaoCO2": {
+      "type": "boolean"
+     }
+    }
+   },
+   "ParametrosIdeais": {
+    "type": "object",
+    "properties": {
+     "phMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "phMax": {
+      "type": "number",
+      "format": "float"
+     },
+     "tempMin": {
+      "type": "number",
+      "format": "float"
+     },
+     "tempMax": {
+      "type": "number",
+      "format": "float"
+     }
+    }
+   },
+   "Diagnostico": {
+    "type": "object",
+    "properties": {
+     "estado": {
+      "type": "string",
+      "enum": [
+       "SAUDAVEL",
+       "ATENCAO",
+       "CRITICO"
+      ]
+     },
+     "alertas": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Alerta"
+      }
+     }
+    }
+   },
+   "AnimalAquarioResponse": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAnimal": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "idAquario": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "quantidade": {
+      "type": "integer",
+      "format": "int32"
+     },
+     "dataAdicao": {
+      "type": "string",
+      "format": "date"
+     }
+    }
+   }
+  }
+ }
+}
