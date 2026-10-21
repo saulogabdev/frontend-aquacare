@@ -10,6 +10,9 @@ envie este arquivo e diga: "continue como meu professor a partir daqui".
   de *outro* app, e depois **revisa** o código (lendo os arquivos e rodando lint e typecheck).
   Ele não escreve o código das tarefas, a não ser quando o Saulo autoriza explicitamente.
 - As explicações usam analogias com Java e Spring, que é a área de domínio do Saulo.
+- **Todo passo vem com um exemplo de código** de outro app (livraria, cinema...), mostrando exatamente
+  aquele pedaço. Nunca pedir para o Saulo escrever algo que não foi mostrado num exemplo parecido,
+  nem pular a explicação de um arquivo (ex.: o `api.ts`).
 - Ao fim de cada etapa que funciona: `npx expo lint`, `npx tsc --noEmit` e um commit.
 - Os comandos são sempre rodados da **raiz do projeto** (a pasta com o `package.json`).
 
@@ -44,8 +47,15 @@ src/
 ├── contexts/
 │   ├── AquarioContext.tsx     AquarioProvider + useAquarioContext (lista e aquário ativo)
 │   └── RegistroContext.tsx    RegistroProvider + useRegistroContext (lista de registros)
+├── services/
+│   ├── api.ts                 API_URL lida do .env.local (lança erro se não existir)
+│   ├── usuarioService.ts      login(email, senha): Promise<string> (o token)
+│   └── aquarioService.ts      listar aquários (em andamento)
 └── types/                     tipos do domínio (Aquario, NovoAquario, Animal, Planta...)
 ```
+
+Fora do `src/`: o `.env.local` na raiz (ignorado pelo Git) guarda `EXPO_PUBLIC_API_URL=http://<IP do PC>:8080`.
+Cada PC precisa criar o seu.
 
 ---
 
@@ -180,12 +190,92 @@ src/
 
 **Parte B (não feita):** histórico dos registros. Com a API, ele virá de `GET /registro/aquario/{id}`.
 
+## Aula 7: Integração com a API (em andamento)
+
+### Parte 0: subir o backend e testar o login ✅
+
+**Conceitos**
+- `.env` do backend: o `application.properties` usa `${JWT_SECRET}`, `${DATASOURCE_PASSWORD}` etc., e a
+  dependência `spring-dotenv` lê esses valores de um `.env` (ignorado pelo Git, então cada um cria o seu).
+- O banco é um **MySQL dentro do Docker**, e não o MySQL do PC. O `docker-compose.yml` cria o usuário
+  `aquacare` com a senha `MYSQL_PASSWORD` **na primeira vez** que o container sobe. A porta 3308 evita
+  conflito com um MySQL local na 3306. Se mudar a senha depois: `docker compose down -v` (apaga os dados).
+- `JWT_SECRET`: quem inventa é você (32+ caracteres, porque o HS256 exige 256 bits). É o "carimbo" que
+  assina o token. Token gerado num servidor não vale em outro com segredo diferente.
+- **JWT**: `cabeçalho.conteúdo.assinatura`. O conteúdo (`sub` = e-mail, `iat`, `exp`) é só Base64 e dá
+  para ler em jwt.io. A assinatura impede alterar o conteúdo. Vale 24 horas.
+- API **stateless**: o servidor não guarda sessão. Toda requisição leva `Authorization: Bearer <token>`,
+  e o `JwtAuthFilter` descobre o usuário pelo e-mail do token.
+- O terminal do backend imprimindo SQL sem parar **não é travamento**: é o `@Scheduled` do
+  `LembreteSchedulerService` somado ao `show-sql=true`.
+
+**Como subir o backend** (na pasta do backend; hoje o Saulo usa `~/Downloads/aquacare-backend-main`, um ZIP)
+```bash
+# .env com MYSQL_ROOT_PASSWORD, MYSQL_PASSWORD, DATASOURCE_PASSWORD (= MYSQL_PASSWORD),
+# JWT_SECRET (32+ caracteres), MAIL_USERNAME e MAIL_PASSWORD (podem ficar vazios)
+docker compose up -d          # MySQL na porta 3308
+./mvnw spring-boot:run        # pronto quando aparecer "Started AquacareApplication"
+```
+Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.com` / `123456`.
+
+**O que foi visto na prática**
+- O login devolve **200** com o token em `text/plain` (então o app usa `response.text()`).
+- `/aquarios/meus` com o token devolve **200** e JSON. Sem o token, devolve **403 sem corpo**.
+
+### Parte 1: alinhar os tipos de aquário com a API ✅
+
+**Conceitos**
+- O tipo é o contrato. Se o nome estiver errado, o valor vem `undefined` sem erro nenhum.
+- **Request ≠ Response**, como os records `DadosRequest` e `AquarioResponse` do backend. O `NovoAquario`
+  deixou de ser `Omit<Aquario, ...>` e virou um tipo próprio.
+- O spread copia os campos com o nome que já têm: não "converte" `nivelPlanta` em `nivelPlantas`.
+  Para isso, monte o objeto campo a campo (como o `AquarioResponse.from()`).
+- `LocalDateTime` do Java chega no JSON como `string`.
+- Usar os erros do `tsc` como lista de tarefas.
+
+**O que foi feito**
+- `Aquario`: `id`, `nivelPlantas` (`BAIXA|MEDIA|ALTA`), `dataMontagem`. `NovoAquario`: `nivelPlanta`, sem `id` e sem `dataMontagem`.
+- `TipoEquipamento` sem `OUTRO`. O registro continua com `idAquario` (é a chave estrangeira).
+- O `adicionarAquario` do Context faz o papel do servidor (temporário, até a API entrar).
+
+**Commit:** `refactor: alinha tipos de aquário com a API`
+
+### Parte 2: camada de service (em andamento)
+
+**Conceitos**
+- Service no app = `@Service` que chama outra API. As telas não sabem que existe HTTP. Um arquivo que
+  exporta funções já é um service (como uma classe só com métodos `static`).
+- `fetch` ≈ `RestTemplate`. `Promise<T>` ≈ `CompletableFuture<T>`. O `await` espera sem travar a tela e
+  só funciona dentro de uma função `async`, que sempre devolve uma `Promise`.
+- **O `fetch` não lança erro em 4xx/5xx**: confira `response.ok` e lance o `Error` você mesmo.
+- Corpo da resposta: `response.text()` para texto (o login), `response.json()` para JSON (as listas).
+  O 403 vem sem corpo, então use o `response.status` na mensagem (`texto || "Erro (403)"`).
+- Envio: `method`, `headers` (`Content-Type: application/json`, `Authorization: Bearer ${token}`) e
+  `body: JSON.stringify(objeto)`. `{ email, senha }` é atalho para `{ email: email, senha: senha }`.
+- Variável de ambiente do Expo: prefixo `EXPO_PUBLIC_`, lida com `process.env.EXPO_PUBLIC_API_URL`
+  **escrito por extenso** (sem desestruturar). O tipo é `string | undefined`, então valide com `if` + `throw`.
+- O token **não é importado**: ele só existe depois do login e muda por usuário. Ele chega como
+  **parâmetro** dos services, e quem chama passa o resultado do `login()`.
+- O TypeScript não confere URLs: uma rota errada só aparece rodando.
+
+**O que foi feito**
+- `.env.local`, `api.ts` e `usuarioService.ts` com o `login` (revisados, `tsc` e lint ok).
+
+**Falta para fechar a Parte 2**
+- `aquarioService.ts`: trocar a URL `/aquarios` (não existe) por `/aquarios/meus`; criar o
+  `cadastrarAquario(token, novoAquario): Promise<void>` (`POST /aquarios/cadastrar`); opcional: import
+  `@/types` e nome `listarMeusAquarios`.
+- Testar com um botão provisório na aba Perfil (`login` → token → listar → `console.log`).
+- Commit: `feat: adiciona services de usuário e aquário para a API`.
+
 ---
 
 ## API do backend (recebida em 13/10/2026)
 
 Referência: https://claude.ai/artifact/Nu6g1J7YPZsNgsksaZMp7o (gerada do OpenAPI do backend).
 Cópia da especificação: [`docs/api-spec.json`](api-spec.json).
+Repositório do backend (Spring Boot 3.5, Java 21, MySQL 8 no Docker): https://github.com/Brayan-Alves/aquacare-backend
+— lido em 21/10/2026. Os DTOs reais são `record`s dentro de cada controller.
 Base URL: `http://localhost:8080` (roda na máquina do Brayan). Swagger UI em `/swagger-ui.html`.
 
 **Autenticação:** só 4 rotas são públicas: `POST /usuarios/login` (`{email, senha}`, devolve uma string, provavelmente o token),
@@ -205,7 +295,14 @@ Consequência: **o login precisa vir antes** de listar aquários pela API.
 | Associações | `/animal-aquario/associar`, `/animal-aquario/aquario/{id}`, idem `/planta-aquario` |
 | Outros | `/equipamento`, `/lembrete` (`meus`, `aquario/{id}`), `/dispositivo`, `PUT/DELETE /usuarios/{id}` |
 
-**Diferenças entre `src/types` e a API (ainda não corrigidas no app)**
+**Corpos confirmados no código do backend**
+- `POST /aquarios/cadastrar`: `{ nome, litragem, tipoAgua, nivelPlanta, isCiclado, injecaoCO2 }` → 201 sem corpo.
+  A resposta (`AquarioResponse`) usa **`nivelPlantas`**, com "s", além de `id` e `dataMontagem`.
+- `POST /usuarios/login` → 200 com o token em **texto puro**. Senha errada → 400 com "E-mail ou senha inválidos.".
+- `POST /registro/cadastrar`: `{ idAquario, ph, temperatura, amonia, nitrato?, nitrito?, gh?, kh?, co2?,
+  salinidade?, calcio?, magnesio? }` → 201 com a lista de alertas. A `dataHora` é do servidor.
+
+**Diferenças entre `src/types` e a API** (as do aquário e do equipamento já foram corrigidas na Aula 7)
 
 | Onde | No app | Na API |
 | --- | --- | --- |
@@ -234,22 +331,34 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 - `aquariosIniciais`: um campo por linha, e dados realistas (o aquário de corais não deveria ter plantas).
 - Aba Parâmetros: mensagem "Nenhum aquário ativo..." quando não houver aquário selecionado.
 
-## Perguntas em aberto (responder antes da próxima aula)
+## Perguntas respondidas (21/10/2026)
 
-1. **O Saulo consegue rodar o backend no próprio computador?** (repositório, Docker, MySQL). O iPhone não acessa
-   `localhost` do computador: vai ser preciso usar o IP do computador na rede Wi-Fi.
-2. **Perguntar ao Brayan:** quais campos o `POST /aquarios/cadastrar` recebe? O login devolve só o texto do token ou um JSON?
-3. **Decisão:** o app segue a API, ou a API muda para seguir o artigo? Recomendação: o app segue a API, e só as
-   diferenças de **regra** vão para o Brayan (aquário sem plantas, equipamento `OUTRO`).
+1. ✅ O backend roda no PC do laboratório (Java 21 e Docker já instalados). No iPhone, use o IP do PC na
+   rede (`hostname -I`), não `localhost`. Se der `Network request failed`, teste primeiro na versão web.
+2. ✅ Os corpos do cadastro e do login foram lidos direto no código (ver "Corpos confirmados" acima).
+3. ✅ Decisão: **o app segue a API**. As diferenças de regra vão para o Brayan (lista abaixo).
+
+## Para levar ao Brayan
+
+1. **Segurança:** `/aquarios/{id}`, `/registro/...` e `/aquarios/listar-todos` não conferem se o aquário é do
+   usuário logado. Qualquer usuário logado vê, edita e apaga os aquários dos outros.
+2. Sem token, ou com token inválido/expirado, a resposta é **403 sem corpo**, e não 401. Token inválido gera
+   exceção dentro do `JwtAuthFilter`. (O app vai tratar 401 e 403 como "voltar para o login".)
+3. Não existe `GET /usuarios/me`: o app não consegue saber o nome do usuário logado (aba Perfil).
+4. Nome diferente entre request (`nivelPlanta`) e response (`nivelPlantas`) do aquário.
+5. Regra: aquário sem plantas (o enum não tem "nenhum") e equipamento `OUTRO`.
+6. Documentação: `springdoc.use-fqn=true` para resolver a colisão dos `DadosRequest` no Swagger.
 
 ## Próximos passos
 
-**Aula 7, integração com a API** (depois das respostas acima):
-1. Alinhar os tipos de `src/types` com a API (o TypeScript aponta todos os lugares que precisam mudar).
-2. Camada de service: `src/services/` com `fetch` e `async/await` (como o service do Spring). Os componentes não mudam.
-3. Login: tela fora das abas, guardar o token, enviar `Authorization: Bearer` e redirecionar para `/login` no `_layout.tsx`.
+**Aula 7, integração com a API:**
+1. ✅ Alinhar os tipos de aquário com a API.
+2. ⏳ Camada de service (ver "Falta para fechar a Parte 2" na Aula 7).
+3. Login: tela fora das abas, guardar o token num `AuthContext`, enviar `Authorization: Bearer` e
+   redirecionar para `/login` no `_layout.tsx`. Os services continuam recebendo o token por parâmetro.
 4. Listar os aquários com `GET /aquarios/meus`, com estados de carregando e erro.
 5. Salvar o registro com `POST /registro/cadastrar` e mostrar os alertas devolvidos.
+6. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
 
 Depois:
 - Histórico de registros (`GET /registro/aquario/{id}`) e diagnóstico (`GET /aquarios/{id}/diagnostico`), o diferencial do TCC.
