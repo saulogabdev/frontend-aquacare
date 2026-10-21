@@ -1,19 +1,26 @@
 export type TipoAgua = 'DOCE' | 'MARINHO';
-export type NivelPlantas = 'NENHUM' | 'BAIXO' | 'MEDIO' | 'ALTO';
-export type TipoEquipamento = 'FILTRO' | 'TERMOSTATO' | 'ILUMINACAO' | 'OUTRO';
+export type NivelPlantas = 'BAIXA' | 'MEDIA' | 'ALTA';
+export type TipoEquipamento = 'FILTRO' | 'TERMOSTATO' | 'ILUMINACAO';
 
 export type Aquario = {
-  idAquario: number;
+  id: number;
   nome: string;
   litragem: number;
   tipoAgua: TipoAgua;
-  nivelPlanta: NivelPlantas;
+  nivelPlantas: NivelPlantas;
   dataMontagem: string;
   isCiclado: boolean;
   injecaoCO2: boolean;
 };
 
-export type NovoAquario = Omit<Aquario, 'idAquario'>;
+export type NovoAquario = {
+  nome: string;
+  litragem: number;
+  tipoAgua: TipoAgua;
+  nivelPlanta: NivelPlantas;
+  isCiclado: boolean;
+  injecaoCO2: boolean;
+};
 
 export type Equipamento = {
   idEquipamento: number;

@@ -5,7 +5,7 @@ import RegistroForm, { MedicoesRegistro } from "@/components/RegistroForm";
 
 export default function Parametros() {
     const {aquarios, idSelecionado} = useAquarioContext();
-    const aquarioSelecionado = aquarios.find((a) => a.idAquario === idSelecionado);
+    const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
     const {registros, adicionarRegistro} = useRegistroContext();
 
     function salvarRegistro(medicoes: MedicoesRegistro) {
@@ -14,7 +14,7 @@ export default function Parametros() {
         }
         adicionarRegistro({
             ...medicoes,
-            idAquario: aquarioSelecionado.idAquario,
+            idAquario: aquarioSelecionado.id,
             dataHora: new Date().toISOString(),
         });
     }

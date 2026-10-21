@@ -11,9 +11,9 @@ type AquarioContextType = {
 const AquarioContext = createContext<AquarioContextType | null>(null);
 
 const aquariosIniciais: Aquario[] = [
-  { idAquario: 1, nome: "Aquário Amazônico", litragem: 100, tipoAgua: "DOCE", nivelPlanta: "MEDIO", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: false },
-  { idAquario: 2, nome: "Aquário de Corais", litragem: 60, tipoAgua: "MARINHO", nivelPlanta: "BAIXO", dataMontagem: "2023-01-01", isCiclado: false, injecaoCO2: false },
-  { idAquario: 3, nome: "Aquário de Plantas", litragem: 80, tipoAgua: "DOCE", nivelPlanta: "ALTO", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: true },
+    { id: 1, nome: "Aquário Amazônico", litragem: 100, tipoAgua: "DOCE", nivelPlantas: "MEDIA", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: false },
+    { id: 2, nome: "Aquário de Corais", litragem: 60, tipoAgua: "MARINHO", nivelPlantas: "BAIXA", dataMontagem: "2023-01-01", isCiclado: false, injecaoCO2: false },
+    { id: 3, nome: "Aquário de Plantas", litragem: 80, tipoAgua: "DOCE", nivelPlantas: "ALTA", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: true },
 ];
 
 export function AquarioProvider({ children }: { children: ReactNode }) {
@@ -21,7 +21,15 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
     const [idSelecionado, setIdSelecionado] = useState(1);
 
     function adicionarAquario(novoAquario: NovoAquario) {
-        const aquario: Aquario = { ...novoAquario, idAquario: Date.now() };
+        const aquario: Aquario = {
+            id: Date.now(), nome: novoAquario.nome,
+            litragem: novoAquario.litragem,
+            tipoAgua: novoAquario.tipoAgua,
+            nivelPlantas: novoAquario.nivelPlanta,
+            dataMontagem: new Date().toISOString(),
+            isCiclado: novoAquario.isCiclado,
+            injecaoCO2: novoAquario.injecaoCO2
+        };
         setAquarios([...aquarios, aquario]);
     }
 

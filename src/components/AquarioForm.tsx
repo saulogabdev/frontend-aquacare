@@ -28,8 +28,7 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
             nome: nome.trim(),
             litragem: litros,
             tipoAgua: tipoAgua,
-            nivelPlanta: "NENHUM",
-            dataMontagem: new Date().toISOString(),
+            nivelPlanta: "BAIXA",
             isCiclado: false,
             injecaoCO2: false,
         };
