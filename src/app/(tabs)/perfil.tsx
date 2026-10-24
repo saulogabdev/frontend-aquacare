@@ -1,23 +1,14 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import { login } from "@/services/usuarioService"
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export default function Perfil() {
-  async function testarApi() {
-    try {
-      const token = await login("saulo@teste.com", "123456");
-      console.log("Token:", token)
-    } catch (erro) {
-      if (erro instanceof Error) {
-        console.log("Erro:", erro.message)
-      }
-    }
-  }
+  const { sair } = useAuthContext();
 
   return (
     <View style={styles.container}>
       <Text>Perfil</Text>
-      <Pressable onPress={testarApi} style={styles.botao}>
-          <Text>Testar API (provisório)</Text>
+      <Pressable onPress={sair} style={styles.botao}>
+          <Text>Sair</Text>
       </Pressable>
     </View >
   )

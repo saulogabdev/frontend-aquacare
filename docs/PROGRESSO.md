@@ -261,12 +261,65 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
 **O que foi feito**
 - `.env.local`, `api.ts` e `usuarioService.ts` com o `login` (revisados, `tsc` e lint ok).
 
-**Falta para fechar a Parte 2**
-- `aquarioService.ts`: trocar a URL `/aquarios` (não existe) por `/aquarios/meus`; criar o
-  `cadastrarAquario(token, novoAquario): Promise<void>` (`POST /aquarios/cadastrar`); opcional: import
-  `@/types` e nome `listarMeusAquarios`.
-- Testar com um botão provisório na aba Perfil (`login` → token → listar → `console.log`).
-- Commit: `feat: adiciona services de usuário e aquário para a API`.
+- `aquarioService.ts` com `listarMeusAquarios(token)` (`GET /aquarios/meus`) e
+  `cadastrarAquario(token, novoAquario)` (`POST /aquarios/cadastrar`). Revisado em 24/10/2026, `tsc` e lint ok.
+- **Commits:** `feat: adiciona service de aquários` · `feat: adiciona cadastro de aquário ao service`
+
+- Teste de ponta a ponta (24/10/2026) ✅: o botão provisório da aba Perfil faz `login` → `cadastrarAquario`
+  → `listarMeusAquarios` → `console.log`, e os dados aparecem no MySQL Workbench. (Ainda sem commit.)
+- MySQL Workbench: host `127.0.0.1`, porta **3308** (não 3306), usuário `aquacare`, banco `aquacare`,
+  senha = `MYSQL_PASSWORD` do `.env` do backend. Use para olhar os dados; para mudar, use a API.
+- Lição: o banco é **por computador** (cada PC tem o seu container). Neste PC o usuário de teste é
+  `saulo@teste.com` / `saulo123`, criado pelo Swagger (`POST /usuarios/cadastrar`).
+  Para achar um erro de login: teste a mesma requisição no Swagger primeiro.
+
+**Parte 2 concluída.**
+
+### Parte 3: tela de login + `AuthContext` ✅ (falta limpar o lint e commitar)
+
+**Conceitos**
+- `Stack.Protected guard={...}`: as telas dentro dele só existem quando o `guard` é `true`.
+  É uma regra declarada num lugar só, como o `authorizeHttpRequests` do Spring Security.
+- ⚠️ Quando o `guard` vai de `true` para `false`, o Expo Router tira o usuário da tela. Mas de `false` para
+  `true` ele **não** leva o usuário até a tela nova. Solução: proteger o login com o `guard` **invertido**
+  (`token === null`). Assim existe sempre exatamente uma tela disponível, e a troca é automática nos dois sentidos.
+- Isso protege só a navegação. Quem protege os dados é o backend, com o token.
+- Um hook só funciona **abaixo** do seu Provider: o `_layout.tsx` raiz foi dividido em `RootLayout`
+  (coloca os Providers) e `NavegacaoRaiz` (usa o `useAuthContext` e monta o Stack).
+- O `AuthProvider` fica por fora dos outros, porque eles vão precisar do token para chamar a API.
+- Guardar o mínimo no Context (o `token`) e **derivar** o resto (`token !== null` = está logado),
+  sem um segundo estado para manter sincronizado.
+- `useState<string | null>(null)`: o tipo precisa ser declarado, senão o TypeScript acha que é sempre `null`.
+- O `entrar` é `async` (`Promise<void>`) e **não** tem `try/catch`: o erro sobe para a tela, que mostra a mensagem.
+- Na tela: estados `carregando` (botão com `disabled` e o texto "Entrando...") e `erro`, com `try/catch/finally`
+  (o `finally` roda sempre) e `if (e instanceof Error)`.
+- Mensagem condicional com `erro !== "" && <Text>`: a comparação explícita evita o erro
+  "Text strings must be rendered within a `<Text>` component" quando o texto é vazio.
+- `TextInput`: `secureTextEntry` (senha), `autoCapitalize="none"` e `keyboardType="email-address"`.
+
+**O que foi feito**
+- `src/contexts/AuthContext.tsx` (`token`, `entrar`, `sair`, `useAuthContext`).
+- `src/app/login.tsx` fora das abas, com carregando e erro (a mensagem de erro foi escrita pelo Claude, com autorização).
+- `_layout.tsx` com os dois `Stack.Protected`. A aba Perfil tem o botão "Sair", e o botão provisório saiu.
+
+**Limitações conhecidas (próxima parte)**
+- O token fica só em memória: ao recarregar o app, volta para o login.
+- Os aquários do Dashboard ainda são os de memória (`aquariosIniciais`), e não os da API.
+- O `.env.local` é ignorado pelo Git (`.env*.local`): **cada computador precisa criar o seu**, com
+  `EXPO_PUBLIC_API_URL=http://<IP do PC que roda o backend>:8080`. Sem ele, o `api.ts` lança erro ao abrir o app.
+  Depois de mudar o `.env.local`, reinicie o `npx expo start`.
+
+**Rodar o backend no Windows (PC de casa, 24/10/2026)**
+- Erro `JAVA_HOME environment variable is not defined correctly`: o `mvnw` precisa da variável `JAVA_HOME`
+  apontando para a pasta do JDK (`C:\Program Files\Java\jdk-24`). O `java -version` funcionar não basta.
+  Criar com: `[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Java\jdk-24", "User")`.
+- Variáveis de ambiente só valem para programas abertos **depois** da mudança: feche o VS Code inteiro.
+- **WSL ≠ Windows**: o WSL é um Linux à parte, com variáveis e programas próprios. O `JAVA_HOME` do Windows
+  não existe dentro dele. Rode o backend no PowerShell **sem** WSL, com `.\mvnw spring-boot:run`.
+- IP para o celular: no Windows, use o `ipconfig` (adaptador Wi-Fi, "Endereço IPv4"). O `hostname -I`
+  do WSL mostra o IP da máquina virtual, que o celular não alcança. Se der `Network request failed`,
+  verifique o Firewall do Windows (porta 8080) e teste antes na versão web.
+- Este PC tem o JDK 24; o backend pede o 21. Se aparecer erro de compilação (ex.: Lombok), instalar o JDK 21.
 
 ---
 
@@ -353,10 +406,11 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 
 **Aula 7, integração com a API:**
 1. ✅ Alinhar os tipos de aquário com a API.
-2. ⏳ Camada de service (ver "Falta para fechar a Parte 2" na Aula 7).
-3. Login: tela fora das abas, guardar o token num `AuthContext`, enviar `Authorization: Bearer` e
-   redirecionar para `/login` no `_layout.tsx`. Os services continuam recebendo o token por parâmetro.
-4. Listar os aquários com `GET /aquarios/meus`, com estados de carregando e erro.
+2. ✅ Camada de service.
+3. ✅ Login: tela fora das abas, token no `AuthContext`, `Stack.Protected` no `_layout.tsx`.
+4. ⏭️ Parte 4: guardar o token no celular (`expo-secure-store`) e ligar o `AquarioContext` na API
+   (`GET /aquarios/meus` ao entrar, `POST /aquarios/cadastrar` no formulário), com carregando e erro.
+   Os services continuam recebendo o token por parâmetro, e quem passa é o Context.
 5. Salvar o registro com `POST /registro/cadastrar` e mostrar os alertas devolvidos.
 6. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
 
