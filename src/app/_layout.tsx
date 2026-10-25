@@ -4,7 +4,11 @@ import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { RegistroProvider } from "@/contexts/RegistroContext";
 
 function NavegacaoRaiz() {
-  const { token } = useAuthContext();
+  const { token, carregando } = useAuthContext();
+
+  if (carregando) {
+    return null;
+  }
 
   return (
     <Stack>

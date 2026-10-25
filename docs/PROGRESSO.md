@@ -401,6 +401,9 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 4. Nome diferente entre request (`nivelPlanta`) e response (`nivelPlantas`) do aquário.
 5. Regra: aquário sem plantas (o enum não tem "nenhum") e equipamento `OUTRO`.
 6. Documentação: `springdoc.use-fqn=true` para resolver a colisão dos `DadosRequest` no Swagger.
+7. Validade do JWT (hoje 24 h): para um app de uso esporádico, avaliar 7 a 30 dias. **Não** remover a validade:
+   como a API é stateless, o `exp` é a única forma de um token "morrer" (o "Sair" do app só apaga a cópia
+   do celular; o token continua válido no servidor até vencer). Justificar o valor escolhido no artigo.
 
 ## Próximos passos
 
