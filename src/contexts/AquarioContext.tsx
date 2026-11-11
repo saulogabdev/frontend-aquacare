@@ -1,24 +1,55 @@
 import { Aquario, NovoAquario } from "@/types";
-import { createContext, useState, ReactNode, useContext } from "react";
+import { listarMeusAquarios, cadastrarAquario } from "@/services/aquarioService";
+import { createContext, useState, ReactNode, useContext, useEffect } from "react";
+import { useAuthContext } from "./AuthContext";
 
 type AquarioContextType = {
     aquarios: Aquario[];
-    idSelecionado: number;
+    idSelecionado: number | null;
     adicionarAquario: (novoAquario: NovoAquario) => void;
     selecionarAquario: (idAquario: number) => void;
+    erro: string;
+    carregando: boolean;
 }
 
 const AquarioContext = createContext<AquarioContextType | null>(null);
 
-const aquariosIniciais: Aquario[] = [
-    { id: 1, nome: "Aquário Amazônico", litragem: 100, tipoAgua: "DOCE", nivelPlantas: "MEDIA", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: false },
-    { id: 2, nome: "Aquário de Corais", litragem: 60, tipoAgua: "MARINHO", nivelPlantas: "BAIXA", dataMontagem: "2023-01-01", isCiclado: false, injecaoCO2: false },
-    { id: 3, nome: "Aquário de Plantas", litragem: 80, tipoAgua: "DOCE", nivelPlantas: "ALTA", dataMontagem: "2023-01-01", isCiclado: true, injecaoCO2: true },
-];
-
 export function AquarioProvider({ children }: { children: ReactNode }) {
-    const [aquarios, setAquarios] = useState<Aquario[]>(aquariosIniciais);
-    const [idSelecionado, setIdSelecionado] = useState(1);
+    const {token} = useAuthContext();
+    const [aquarios, setAquarios] = useState<Aquario[]>([]);
+    const [carregando, setCarregando] = useState<boolean>(true);
+    const [idSelecionado, setIdSelecionado] = useState<number | null>(null);
+    const [erro, setErro] = useState("");
+
+    useEffect(() => {
+        async function carregarAquarios() {
+            if (token === null) {
+                setAquarios([]);
+                setIdSelecionado(null);
+                setErro("");
+                return;
+            }
+            setCarregando(true);
+            setErro("");
+            try {
+                const listaAquarios = await listarMeusAquarios(token);
+                setAquarios(listaAquarios);
+                if (listaAquarios.length > 0) {
+                    setIdSelecionado(listaAquarios[0].id);
+                }
+            } catch (error) {
+                if (error instanceof Error) {
+                    setErro(error.message);
+                }
+                
+            } finally {
+                setCarregando(false);
+            }
+            
+        }
+        carregarAquarios();
+    }, [token]);
+    
 
     function adicionarAquario(novoAquario: NovoAquario) {
         const aquario: Aquario = {
@@ -41,7 +72,9 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
         aquarios,
         idSelecionado,
         adicionarAquario,
-        selecionarAquario
+        selecionarAquario,
+        erro,
+        carregando
     };
 
     return (

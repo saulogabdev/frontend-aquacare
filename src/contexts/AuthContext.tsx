@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setToken(tokenArmazenado);
                 setCarregando(false);
             } finally {
-                setCarregando(false);
             }
         }
         verificarToken();
@@ -30,13 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function entrar(email: string, senha: string): Promise<void> {
         const token = await login(email, senha);
-        setToken(token);
         await salvarToken(token);
+        setToken(token);
     }
 
     async function sair() {
-        setToken(null);
         await removerToken();
+        setToken(null);
     }
 
     return (

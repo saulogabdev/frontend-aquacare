@@ -10,6 +10,8 @@ envie este arquivo e diga: "continue como meu professor a partir daqui".
   de *outro* app, e depois **revisa** o código (lendo os arquivos e rodando lint e typecheck).
   Ele não escreve o código das tarefas, a não ser quando o Saulo autoriza explicitamente.
 - As explicações usam analogias com Java e Spring, que é a área de domínio do Saulo.
+- Ao passar uma tarefa, o Claude marca o que é **novo** e o que é **repetitivo** (algo já feito e aprendido
+  numa aula anterior). O Saulo decide se faz a parte repetitiva ou se passa para o Claude.
 - **Todo passo vem com um exemplo de código** de outro app (livraria, cinema...), mostrando exatamente
   aquele pedaço. Nunca pedir para o Saulo escrever algo que não foi mostrado num exemplo parecido,
   nem pular a explicação de um arquivo (ex.: o `api.ts`).
@@ -240,7 +242,7 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
 
 **Commit:** `refactor: alinha tipos de aquário com a API`
 
-### Parte 2: camada de service (em andamento)
+### Parte 2: camada de service ✅
 
 **Conceitos**
 - Service no app = `@Service` que chama outra API. As telas não sabem que existe HTTP. Um arquivo que
@@ -275,7 +277,7 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
 
 **Parte 2 concluída.**
 
-### Parte 3: tela de login + `AuthContext` ✅ (falta limpar o lint e commitar)
+### Parte 3: tela de login + `AuthContext` ✅
 
 **Conceitos**
 - `Stack.Protected guard={...}`: as telas dentro dele só existem quando o `guard` é `true`.
@@ -302,9 +304,11 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
 - `src/app/login.tsx` fora das abas, com carregando e erro (a mensagem de erro foi escrita pelo Claude, com autorização).
 - `_layout.tsx` com os dois `Stack.Protected`. A aba Perfil tem o botão "Sair", e o botão provisório saiu.
 
-**Limitações conhecidas (próxima parte)**
-- O token fica só em memória: ao recarregar o app, volta para o login.
-- Os aquários do Dashboard ainda são os de memória (`aquariosIniciais`), e não os da API.
+**Limitações conhecidas (resolvidas na Parte 4)**
+- O token fica só em memória: ao recarregar o app, volta para o login. (Resolvido na 4A.)
+- Os aquários do Dashboard ainda são os de memória (`aquariosIniciais`), e não os da API. (Parte 4B.)
+
+**Configuração por computador**
 - O `.env.local` é ignorado pelo Git (`.env*.local`): **cada computador precisa criar o seu**, com
   `EXPO_PUBLIC_API_URL=http://<IP do PC que roda o backend>:8080`. Sem ele, o `api.ts` lança erro ao abrir o app.
   Depois de mudar o `.env.local`, reinicie o `npx expo start`.
@@ -320,6 +324,51 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
   do WSL mostra o IP da máquina virtual, que o celular não alcança. Se der `Network request failed`,
   verifique o Firewall do Windows (porta 8080) e teste antes na versão web.
 - Este PC tem o JDK 24; o backend pede o 21. Se aparecer erro de compilação (ex.: Lombok), instalar o JDK 21.
+
+### Parte 4A: guardar o token no aparelho ✅
+
+**Conceitos**
+- `expo-secure-store` (Keychain no iPhone, armazenamento criptografado no Android): `setItemAsync`,
+  `getItemAsync` (devolve `string | null`) e `deleteItemAsync`. Instale com `npx expo install`, que também
+  adiciona o config plugin no `app.json` (o `app.json`, o `package.json` e o `package-lock.json` vão no commit).
+- ⚠️ O SecureStore **não funciona na web**. Lá usamos o `localStorage` (síncrono e sem criptografia, só para testes).
+- `Platform.OS === "web"` escolhe a implementação. O `tokenStorage.ts` esconde isso do resto do app
+  (como um `TokenRepository` com duas implementações). Uma função `async` sem `await` também devolve `Promise`.
+- Chave em constante (`CHAVE_TOKEN = "aquacare.token"`): um erro de digitação não cria outra chave sem aviso.
+- `useEffect(() => {...}, [])`: roda **uma vez**, depois que o componente aparece (como o `@PostConstruct`).
+  Ele não aceita uma função `async` direto: crie a função `async` dentro e chame em seguida.
+  Fica no `AuthProvider`: o código que carrega um dado fica junto do estado que o guarda.
+- Estado `carregando` (começa `true`): enquanto o token não foi lido, o layout retorna `null`, evitando a "piscada" do login.
+- O `setCarregando(false)` vai no **`finally`**, senão uma falha na leitura deixa o app em branco para sempre.
+- No `entrar`: **primeiro** o que pode falhar (`salvarToken`), **depois** o que muda a tela (`setToken`).
+- Validade do JWT: a API é stateless, então o `exp` é a única forma de um token deixar de valer. O "Sair"
+  apaga só a cópia do celular. O app precisa tratar token vencido (403 → `sair()`), assunto da Parte 4B.
+
+**O que foi feito**
+- `src/services/tokenStorage.ts` (`salvarToken`, `obterToken`, `removerToken`).
+- `AuthContext` com `carregando` e `useEffect`; o `_layout.tsx` retorna `null` enquanto carrega.
+
+**Commit:** `feat: persiste o token com SecureStore no celular e localStorage na web` (+ o ajuste do `finally`)
+
+### Parte 4B-1: listar os aquários da API ✅ (ainda sem commit)
+
+**Conceitos**
+- Um Context usando outro: o `AquarioProvider` chama o `useAuthContext()` para pegar o token. Funciona porque
+  o `AuthProvider` está por fora (como um `@Service` injetando outro).
+- `useEffect(..., [token])`: roda ao aparecer **e** sempre que o token muda (entrar, sair, trocar de usuário).
+  Ao sair, limpe tudo da sessão (lista, seleção e erro) para o próximo usuário não ver dados do anterior.
+- Os estados de um dado da rede: carregando, erro, vazio e com dados. A tela mostra cada um.
+  `listaVazia = !carregando && erro === "" && aquarios.length === 0` evita "você não tem aquários" enquanto carrega ou com erro.
+- ⚠️ O `setAlgo(valor)` **não muda a variável na hora**: ele agenda um re-render. Na execução atual, o estado
+  ainda tem o valor antigo (uma "foto"). Use a variável local que já tem o valor novo (`listaAquarios`).
+  O aviso `react-hooks/exhaustive-deps` do lint costuma apontar esse tipo de bug.
+- Ao carregar a lista de um novo login, selecionar o primeiro aquário (a seleção anterior era de outra sessão).
+- `ActivityIndicator`: o indicador de carregamento nativo.
+
+**O que foi feito**
+- `AquarioContext`: sem `aquariosIniciais`; `carregando`, `erro`, `idSelecionado: number | null` e `useEffect([token])`.
+- Dashboard com os avisos de carregando, erro e lista vazia (escritos pelo Claude, com autorização).
+- O `adicionarAquario` ainda adiciona só na memória (Parte 4B-2).
 
 ---
 
@@ -411,8 +460,11 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 1. ✅ Alinhar os tipos de aquário com a API.
 2. ✅ Camada de service.
 3. ✅ Login: tela fora das abas, token no `AuthContext`, `Stack.Protected` no `_layout.tsx`.
-4. ⏭️ Parte 4: guardar o token no celular (`expo-secure-store`) e ligar o `AquarioContext` na API
-   (`GET /aquarios/meus` ao entrar, `POST /aquarios/cadastrar` no formulário), com carregando e erro.
+4. ✅ Parte 4A: token guardado no aparelho.
+   ⏭️ Parte 4B: ligar o `AquarioContext` na API, em três etapas:
+   - 4B-1: listar (`GET /aquarios/meus`) quando o token muda, com carregando, erro e lista vazia;
+   - 4B-2: cadastrar (`POST /aquarios/cadastrar`) e recarregar a lista; o formulário espera e mostra erros;
+   - 4B-3: token vencido (403) → `sair()`, com um erro próprio (`ErroApi` com `status`).
    Os services continuam recebendo o token por parâmetro, e quem passa é o Context.
 5. Salvar o registro com `POST /registro/cadastrar` e mostrar os alertas devolvidos.
 6. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
