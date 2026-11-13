@@ -3,7 +3,7 @@ import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-na
 import { NovoAquario, TipoAgua } from "@/types";
 
 type AquarioFormProps = {
-    onSalvar: (novoAquario: NovoAquario) => void;
+    onSalvar: (novoAquario: NovoAquario) => Promise<void>;
 };
 
 const opcoesTipoAgua: { valor: TipoAgua; rotulo: string }[] = [
@@ -15,14 +15,19 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
     const [nome, setNome] = useState("");
     const [litragem, setLitragem] = useState("");
     const [tipoAgua, setTipoAgua] = useState<TipoAgua>("DOCE");
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState("");
 
-    function salvarAquario() {
+    async function salvarAquario() {
         const litros = Number(litragem);
         if (nome.trim() === "" || !(litros > 0)) {
+            setErro("Informe o nome e a litragem do aquário.");
             return;
         }
-        
+
         Keyboard.dismiss();
+        setSalvando(true);
+        setErro("");
 
         const novoAquario: NovoAquario = {
             nome: nome.trim(),
@@ -32,10 +37,20 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
             isCiclado: false,
             injecaoCO2: false,
         };
-        onSalvar(novoAquario);
-        setNome("");
-        setLitragem("");
-        setTipoAgua("DOCE");
+
+        try {
+            await onSalvar(novoAquario);
+            // Só limpa os campos se salvou de verdade; se falhar, o usuário não perde o que digitou.
+            setNome("");
+            setLitragem("");
+            setTipoAgua("DOCE");
+        } catch (e) {
+            if (e instanceof Error) {
+                setErro(e.message);
+            }
+        } finally {
+            setSalvando(false);
+        }
     }
 
     return (
@@ -58,8 +73,13 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
                     );
                 })}
             </View>
-            <Pressable style={styles.botaoAdicionar} onPress={salvarAquario}>
-                <Text style={styles.textoBotaoAdicionar}>Adicionar</Text>
+            {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+            <Pressable
+                style={[styles.botaoAdicionar, salvando && styles.botaoDesabilitado]}
+                onPress={salvarAquario}
+                disabled={salvando}
+            >
+                <Text style={styles.textoBotaoAdicionar}>{salvando ? "Salvando..." : "Adicionar"}</Text>
             </Pressable>
         </View>
     );
@@ -85,6 +105,13 @@ const styles = StyleSheet.create({
     textoBotaoAdicionar: {
         color: "#ffffff",
         fontWeight: "bold",
+    },
+    botaoDesabilitado: {
+        opacity: 0.6,
+    },
+    erro: {
+        color: "#dc2626",
+        textAlign: "center",
     },
     opcoes: {
         flexDirection: "row",

@@ -6,6 +6,12 @@ envie este arquivo e diga: "continue como meu professor a partir daqui".
 
 ## Como trabalhamos
 
+**Modo atual (desde 13/11/2026, prazo de ~2 semanas):** o Claude **implementa** as partes repetitivas e toda
+a estilização, em passos pequenos, com uma explicação curta de cada mudança (para o Saulo conseguir
+defender o código na banca). O Saulo **revisa** cada entrega e, se der tempo, faz ele mesmo o diferencial
+do TCC (registro → alertas, diagnóstico). Commits só quando o Saulo pedir. Plano em "Plano final" (fim do arquivo).
+
+**Modo anterior (Aulas 1 a 7):**
 - O Claude atua como **professor**: explica o conceito, passa a tarefa com dicas e um exemplo
   de *outro* app, e depois **revisa** o código (lendo os arquivos e rodando lint e typecheck).
   Ele não escreve o código das tarefas, a não ser quando o Saulo autoriza explicitamente.
@@ -370,6 +376,24 @@ Swagger: http://localhost:8080/swagger-ui.html. Usuário de teste: `saulo@teste.
 - Dashboard com os avisos de carregando, erro e lista vazia (escritos pelo Claude, com autorização).
 - O `adicionarAquario` ainda adiciona só na memória (Parte 4B-2).
 
+**Commit:** `feat: carrega os aquários da API com carregando, erro e lista vazia`
+
+### Parte 4B-2: cadastrar o aquário pela API ✅ (falta testar e commitar)
+
+**Conceitos**
+- O `POST /aquarios/cadastrar` devolve 201 **sem corpo** (sem o `id`), então depois de cadastrar o app
+  **recarrega a lista** com o `GET` (a fonte da verdade). O `Date.now()` saiu do Context.
+- O `onSalvar` virou `(novo) => Promise<void>`: o formulário usa `await` e **só limpa os campos no sucesso**.
+- O `adicionarAquario` do Context **não tem `try/catch`**: o erro sobe para o formulário (igual ao `entrar`).
+  Se o Context capturar o erro, o formulário acha que deu certo e apaga o que o usuário digitou.
+- Depois de um `throw`, a função já parou: um `return` logo depois é código inalcançável (aviso `no-unreachable`).
+- Selecionar o recém-criado: o maior `id` da lista (`reduce` com `Math.max`).
+
+**O que foi feito**
+- Saulo: o `adicionarAquario` assíncrono com cadastrar → recarregar → selecionar, e o tipo `Promise<void>` no form.
+- Claude (com autorização): os estados `salvando` e `erro` no `AquarioForm` (com a mensagem de validação,
+  fechando a pendência da Aula 4) e a remoção do `try/catch` e do `return` inalcançável do Context.
+
 ---
 
 ## API do backend (recebida em 13/10/2026)
@@ -428,7 +452,6 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 
 ## Pendências opcionais
 
-- Mensagem de erro no `AquarioForm` (estado `erro` + `&&`, em vermelho `#dc2626`).
 - Ícones nas abas (`npx expo install @expo/vector-icons`, opção `tabBarIcon`).
 - `aquariosIniciais`: um campo por linha, e dados realistas (o aquário de corais não deveria ter plantas).
 - Aba Parâmetros: mensagem "Nenhum aquário ativo..." quando não houver aquário selecionado.
@@ -466,12 +489,48 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    - 4B-2: cadastrar (`POST /aquarios/cadastrar`) e recarregar a lista; o formulário espera e mostra erros;
    - 4B-3: token vencido (403) → `sair()`, com um erro próprio (`ErroApi` com `status`).
    Os services continuam recebendo o token por parâmetro, e quem passa é o Context.
-5. Salvar o registro com `POST /registro/cadastrar` e mostrar os alertas devolvidos.
-6. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
+5. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
 
-Depois:
-- Histórico de registros (`GET /registro/aquario/{id}`) e diagnóstico (`GET /aquarios/{id}/diagnostico`), o diferencial do TCC.
-- *Bottom sheet* para os formulários, como no protótipo.
-- Enciclopédia de espécies: busca, filtros e tela de detalhe.
-- Gráficos da variação de cada parâmetro ao longo dos dias.
-- Lembretes com notificações push (`expo-notifications`; o token vai para `/dispositivo/cadastrar`).
+## Plano final (13/11/2026 → ~27/11/2026)
+
+Prioridade = o que mais pesa na apresentação (o SAD do artigo: registrar → analisar → alertar).
+Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o tempo apertar).
+
+**Semana 1: o núcleo do TCC funcionando de ponta a ponta**
+
+| # | Item | Dono | Rotas da API |
+| --- | --- | --- | --- |
+| 1 | 4B-3: token vencido (401/403) → `sair()`, com `ErroApi` (erro com `status`) nos services | C | — |
+| 2 | Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
+| 3 | **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
+| 4 | Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
+| 5 | Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
+| 6 | Tela de cadastro de usuário (link no login) | C | `POST /usuarios/cadastrar` |
+
+**Semana 2: o restante dos requisitos**
+
+| # | Item | Dono | Rotas da API |
+| --- | --- | --- | --- |
+| 7 | Enciclopédia: lista de animais e plantas, busca por nome, tela de detalhe (`especie/[id]`) | C | `/animal/...`, `/planta/...` |
+| 8 | Associar espécies ao aquário e listar as espécies do aquário | C | `/animal-aquario/...`, `/planta-aquario/...` |
+| 9 | Gráficos da variação de cada parâmetro (biblioteca a escolher, compatível com o Expo Go) | C | `GET /registro/aquario/{id}` |
+| 10 | Parâmetros ideais e espécies recomendadas | C | `/aquarios/{id}/parametros-ideais`, `/especies-recomendadas` |
+| 11 | Editar e excluir aquário | C | `PUT/DELETE /aquarios/{id}` |
+| 12 | Lembretes (criar, listar, concluir) com **notificação local** no celular | C | `/lembrete/...` |
+| 13 | Equipamentos (cadastro e listagem) — verificar com o Brayan onde fica o dimensionamento | C | `/equipamento/...` |
+| 14 | Últimos dias: testes no iPhone, prints para o artigo, ensaio da apresentação | S | — |
+
+**Admin (a definir depois, 13/11/2026):** o admin vai ter **uma tela simples para ver os pedidos dos usuários**.
+Ainda falta definir o que é um "pedido" (por exemplo, um pedido de nova espécie?). A API atual **não tem**
+rota de pedidos, então isso provavelmente depende de um endpoint novo no backend (conversar com o Brayan).
+Para mostrar a tela só para o admin, o app precisa saber a `role` do usuário logado (`GET /usuarios/me`,
+ou ler o JWT, se a `role` estiver dentro dele).
+
+**Cortado ou simplificado (justificar no artigo, se for o caso)**
+- Cadastro de espécies pelo admin **dentro do app** → feito pelo Swagger.
+- Recuperar senha e editar conta → fora do app nesta versão.
+- Notificação **push** pelo backend (Firebase) → trocada por notificação **local** (o celular agenda o lembrete).
+- *Bottom sheets* → só se sobrar tempo; os formulários ficam na própria tela.
+
+**Depende do backend (levar ao Brayan)**: ver a lista "Para levar ao Brayan". O `GET /usuarios/me` faria falta
+na aba Perfil (sem ele, o app não sabe o nome do usuário logado).
