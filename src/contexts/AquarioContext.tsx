@@ -1,5 +1,6 @@
 import { Aquario, NovoAquario } from "@/types";
 import { listarMeusAquarios, cadastrarAquario } from "@/services/aquarioService";
+import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { createContext, useState, ReactNode, useContext, useEffect } from "react";
 import { useAuthContext } from "./AuthContext";
 
@@ -15,7 +16,7 @@ type AquarioContextType = {
 const AquarioContext = createContext<AquarioContextType | null>(null);
 
 export function AquarioProvider({ children }: { children: ReactNode }) {
-    const {token} = useAuthContext();
+    const { token, sair } = useAuthContext();
     const [aquarios, setAquarios] = useState<Aquario[]>([]);
     const [carregando, setCarregando] = useState<boolean>(true);
     const [idSelecionado, setIdSelecionado] = useState<number | null>(null);
@@ -38,33 +39,44 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
                     setIdSelecionado(listaAquarios[0].id);
                 }
             } catch (error) {
+                if (ehSessaoExpirada(error)) {
+                    // Token vencido ou inválido: volta para o login com um aviso.
+                    await sair(MENSAGEM_SESSAO_EXPIRADA);
+                    return;
+                }
                 if (error instanceof Error) {
                     setErro(error.message);
                 }
-                
             } finally {
                 setCarregando(false);
             }
-            
         }
         carregarAquarios();
-    }, [token]);
+    }, [token, sair]);
     
 
-    // Sem try/catch: se falhar, o erro sobe para o formulário, que mostra a mensagem e mantém os campos.
+    // O erro continua subindo para o formulário (que mostra a mensagem e mantém os campos).
+    // O catch só existe para, antes disso, deslogar se a sessão tiver expirado.
     async function adicionarAquario(novoAquario: NovoAquario): Promise<void> {
         if (token === null) {
             throw new Error("Usuário não autenticado");
         }
 
-        // faz a chamada para cadastrar o aquário
-        await cadastrarAquario(token, novoAquario);
-        // atualiza a lista de aquarios, ja que a chamada de cadastrar aquario nao retorna o aquario cadastrado
-        const listaAtualizada = await listarMeusAquarios(token);
+        try {
+            // faz a chamada para cadastrar o aquário
+            await cadastrarAquario(token, novoAquario);
+            // atualiza a lista de aquarios, ja que a chamada de cadastrar aquario nao retorna o aquario cadastrado
+            const listaAtualizada = await listarMeusAquarios(token);
 
-        setAquarios(listaAtualizada);
+            setAquarios(listaAtualizada);
 
-        setIdSelecionado(listaAtualizada.reduce((idMaior, aquario) => Math.max(idMaior, aquario.id), 0));
+            setIdSelecionado(listaAtualizada.reduce((idMaior, aquario) => Math.max(idMaior, aquario.id), 0));
+        } catch (error) {
+            if (ehSessaoExpirada(error)) {
+                await sair(MENSAGEM_SESSAO_EXPIRADA);
+            }
+            throw error;
+        }
     }
 
     function selecionarAquario(idAquario: number) {

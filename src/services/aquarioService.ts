@@ -1,4 +1,4 @@
-import { API_URL } from "./api";
+import { API_URL, erroDaResposta } from "./api";
 import { Aquario, NovoAquario } from "@/types";
 
 export async function listarMeusAquarios(token: string): Promise<Aquario[]> {
@@ -10,7 +10,7 @@ export async function listarMeusAquarios(token: string): Promise<Aquario[]> {
     });
 
     if (!response.ok) {
-        throw new Error(`Falha ao listar aquários (${response.status})`);
+        throw await erroDaResposta(response, "Falha ao listar aquários");
     }
 
     const aquarios: Aquario[] = await response.json();
@@ -28,7 +28,6 @@ export async function cadastrarAquario(token: string, novoAquario: NovoAquario):
     });
 
     if (!response.ok) {
-        const texto = await response.text();
-        throw new Error(texto || `Falha ao cadastrar aquário (${response.status})`);
+        throw await erroDaResposta(response, "Falha ao cadastrar aquário");
     }
 }

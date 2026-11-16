@@ -500,12 +500,25 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 
 | # | Item | Dono | Rotas da API |
 | --- | --- | --- | --- |
-| 1 | 4B-3: token vencido (401/403) → `sair()`, com `ErroApi` (erro com `status`) nos services | C | — |
+| 1 | ✅ 4B-3: token vencido (401/403) → `sair()`, com `ErroApi` (erro com `status`) nos services | C | — |
 | 2 | Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
 | 3 | **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
 | 4 | Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
 | 5 | Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
 | 6 | Tela de cadastro de usuário (link no login) | C | `POST /usuarios/cadastrar` |
+
+**Item 1 feito (13/11/2026), como funciona:**
+- `api.ts`: a classe `ErroApi` (um `Error` com `status`, como uma exceção própria em Java), a função
+  `erroDaResposta(response, mensagemPadrao)` usada por todos os services, e `ehSessaoExpirada(erro)` (401 ou 403).
+- `AuthContext`: o `sair(aviso?)` guarda uma mensagem que a tela de login mostra em amarelo. O `sair` usa
+  `useCallback`, para ser sempre a mesma função e poder entrar nas dependências de um `useEffect` sem
+  disparar o efeito a cada re-render. Corrigido também o `setCarregando(false)`, que voltou para o `finally`.
+- `AquarioContext`: ao listar ou cadastrar, se a sessão expirou, chama `sair("Sua sessão expirou...")`.
+  No cadastro, o erro continua subindo para o formulário (`throw error` depois do `sair`).
+- Perfil: `onPress={() => sair()}`. Sem a arrow function, o `onPress` passaria o evento do toque como
+  o primeiro argumento do `sair`, que agora é o texto do aviso.
+- Para testar: na web, F12 → Application → Local Storage → edite o `aquacare.token` (estrague um caractere)
+  e recarregue. Deve voltar ao login com o aviso amarelo.
 
 **Semana 2: o restante dos requisitos**
 

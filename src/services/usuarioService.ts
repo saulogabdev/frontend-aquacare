@@ -1,4 +1,4 @@
-import { API_URL } from './api';
+import { API_URL, erroDaResposta } from './api';
 
 export async function login(email: string, senha: string): Promise<string> {
     const response = await fetch(`${API_URL}/usuarios/login`, {
@@ -8,8 +8,7 @@ export async function login(email: string, senha: string): Promise<string> {
     });
 
     if (!response.ok) {
-        const mensagemErro = await response.text();
-        throw new Error(mensagemErro);
+        throw await erroDaResposta(response, 'Falha ao entrar');
     }
     
     const token = await response.text();

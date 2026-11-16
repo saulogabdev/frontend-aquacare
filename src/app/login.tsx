@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { useAuthContext } from "@/contexts/AuthContext";
 
 export default function Login() {
-    const { entrar } = useAuthContext();
+    const { entrar, aviso } = useAuthContext();
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState("");
     const [email, setEmail] = useState("");
@@ -27,6 +27,7 @@ export default function Login() {
     return (
         <View style={styles.container}>
             <Text style={styles.titulo}>Aquacare</Text>
+            {aviso !== "" && erro === "" && <Text style={styles.aviso}>{aviso}</Text>}
             <TextInput style={styles.campo} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
             <TextInput style={styles.campo} placeholder="Senha" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
@@ -70,5 +71,13 @@ const styles = StyleSheet.create({
     erro: {
         color: "#dc2626",
         textAlign: "center",
+    },
+    aviso: {
+        backgroundColor: "#fef3c7",
+        color: "#b45309",
+        padding: 12,
+        borderRadius: 12,
+        textAlign: "center",
+        overflow: "hidden",
     },
 });

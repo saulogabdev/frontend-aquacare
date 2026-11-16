@@ -7,7 +7,7 @@ export default function Perfil() {
   return (
     <View style={styles.container}>
       <Text>Perfil</Text>
-      <Pressable onPress={sair} style={styles.botao}>
+      <Pressable onPress={() => sair()} style={styles.botao}>
           <Text>Sair</Text>
       </Pressable>
     </View >
