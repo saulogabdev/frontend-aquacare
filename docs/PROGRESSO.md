@@ -476,6 +476,21 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 7. Validade do JWT (hoje 24 h): para um app de uso esporádico, avaliar 7 a 30 dias. **Não** remover a validade:
    como a API é stateless, o `exp` é a única forma de um token "morrer" (o "Sair" do app só apaga a cópia
    do celular; o token continua válido no servidor até vencer). Justificar o valor escolhido no artigo.
+8. **Análise sem espécies:** o `AnaliseParametroService` só gera alertas dentro do `for` dos animais associados.
+   Aquário sem espécie → sempre `[]` → o app mostra "Tudo certo!" para qualquer valor (diagnóstico enganoso).
+   Sugestão: devolver um alerta "Cadastre as espécies do aquário para receber a análise". (Plano B: o app
+   consulta `GET /animal-aquario/aquario/{id}` e avisa.)
+9. **SAD precisa recomendar a ação, não só detectar.** Adicionar `recomendacao` (String) ao `Alerta`, um texto por
+   regra do `AnaliseParametroService`. Separar pH/temperatura em "acima" e "abaixo" (hoje é um `if` só com `||`)
+   para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
+   remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
+   No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+10. **Decisão (16/11): regras extras viram TRABALHOS FUTUROS** (escopo de TCC técnico). Exemplos: KH baixo, CO2
+    calculado por pH+KH (CO2 ≈ 3·KH·10^(7−pH)), oscilação de pH com KH baixo usando o histórico. Motivo: muitas
+    condições e limites que exigem referência. Prioridade agora é só o item 9 (recomendação). Opcional se sobrar
+    tempo: regra "KH baixo" de um registro só + campo KH no `RegistroForm` (hoje KH/GH/CO2/salinidade/cálcio/
+    magnésio vão sempre `null`). **(A FAZER: Saulo vai pedir)** Ler o artigo e separar o que ele promete em
+    "fazer agora" × "trabalhos futuros" (vira a seção do texto).
 
 ## Próximos passos
 
@@ -518,7 +533,33 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - Perfil: `onPress={() => sair()}`. Sem a arrow function, o `onPress` passaria o evento do toque como
   o primeiro argumento do `sair`, que agora é o texto do aviso.
 - Para testar: na web, F12 → Application → Local Storage → edite o `aquacare.token` (estrague um caractere)
-  e recarregue. Deve voltar ao login com o aviso amarelo.
+  e recarregue. Deve voltar ao login com o aviso amarelo. Apagar a chave inteira NÃO mostra o aviso
+  (sem token o app nem chama a API: é "não logado", e não "sessão expirada").
+- Testado em 16/11/2026 ✅. Commit: `feat: volta ao login quando a sessao expira`.
+- `apiFetch` (em `api.ts`): todos os services usam no lugar do `fetch`. Sem conexão, o `fetch` lança um erro
+  técnico em inglês ("Failed to fetch" na web, "Network request failed" no celular); o `apiFetch` troca por
+  "Não foi possível conectar ao servidor...". **Todo service novo deve usar o `apiFetch`.**
+
+**Item 2 (16/11/2026): código pronto, FALTA TESTAR.** Saulo fez com aula; Claude fez a exibição dos alertas e o form.
+- Tipos (`types/registro.ts`): `Severidade = 'ATENCAO' | 'CRITICO'`, `Alerta { mensagem, severidade }`.
+  `NovoRegistroParametro` agora tira `idParametro` **e** `dataHora` (a data é definida pelo servidor).
+- `registroService.ts`: `cadastrarRegistro(token, novo): Promise<Alerta[]>` (como o `cadastrarAquario`, mas lê o
+  corpo com `response.json()`, porque a API devolve a lista de alertas).
+- `RegistroContext`: saiu a lista em memória. `adicionarRegistro` devolve `Promise<Alerta[]>`; trata sessão
+  expirada igual ao `AquarioContext`. Os alertas NÃO ficam no Context: só a tela de Parâmetros usa
+  (Context = o que é compartilhado; o resto é `useState` da tela).
+- `parametros.tsx`: estado `alertas: Alerta[] | null`. `null` = ainda não registrou (não mostra nada);
+  `[]` = tudo certo (cartão verde); com itens = cartões vermelho (CRITICO) / amarelo (ATENCAO).
+  Estilos em lista (`[styles.cartao, styles.critico]`): o comum + a cor.
+- `RegistroForm`: `onSalvar` virou `Promise<void>`; estados `salvando`/`erro`; `try/catch/finally`; limpa os
+  campos só no sucesso; mensagem quando pH/temperatura/amônia estão vazios. Igual ao `AquarioForm`.
+- **Descoberta:** a análise do backend é feita POR ESPÉCIE associada (até a amônia tóxica). Sem espécie →
+  sempre `[]`. Para testar, foi inserido via SQL o Neon (id 1: pH 5–7, 20–26 °C, sensibilidades ALTA/ALTA/MEDIA)
+  e associado aos aquários 1 e 2 (`animal_aquario`). Só o nitrito gera ATENCAO; o resto é CRITICO.
+- Testes a fazer: pH 6,5/24/0 → verde · 7,5/24/0 → crítico pH · 6,5/30/0 → crítico temperatura ·
+  8,5/30/2 → 3 críticos · 6,5/24/0 + nitrito 1 → atenção · backend desligado → sem conexão, campos ficam ·
+  salvar vazio → mensagem.
+- Ideia pendente (Saulo): `useEffect` que zera os alertas (`setAlertas(null)`) quando o `idSelecionado` muda.
 
 **Semana 2: o restante dos requisitos**
 

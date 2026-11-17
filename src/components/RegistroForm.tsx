@@ -2,11 +2,10 @@ import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-na
 import { useState } from "react";
 import { NovoRegistroParametro } from "@/types";
 
-// O que o formulário sabe: só as medições. Quem completa com o aquário e a data é a tela.
-export type MedicoesRegistro = Omit<NovoRegistroParametro, "idAquario" | "dataHora">;
+export type MedicoesRegistro = Omit<NovoRegistroParametro, "idAquario">;
 
 type RegistroFormProps = {
-    onSalvar: (medicoes: MedicoesRegistro) => void;
+    onSalvar: (medicoes: MedicoesRegistro) => Promise<void>;
 };
 
 function paraNumero(valor: string): number | null {
@@ -27,17 +26,24 @@ export default function RegistroForm({ onSalvar }: RegistroFormProps) {
     const [amonia, setAmonia] = useState("");
     const [nitrito, setNitrito] = useState("");
     const [nitrato, setNitrato] = useState("");
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState("");
 
-    function salvarRegistro() {
+    async function salvarRegistro() {
         const registroPh = paraNumero(ph);
         const registroTemperatura = paraNumero(temperatura);
         const registroAmonia = paraNumero(amonia);
         const registroNitrito = paraNumero(nitrito);
         const registroNitrato = paraNumero(nitrato);
 
-        if (registroPh === null || registroTemperatura === null || registroAmonia === null) return;
+        if (registroPh === null || registroTemperatura === null || registroAmonia === null) {
+            setErro("Informe o pH, a temperatura e a amônia.");
+            return;
+        }
 
         Keyboard.dismiss();
+        setSalvando(true);
+        setErro("");
 
         const medicoes: MedicoesRegistro = {
             ph: registroPh,
@@ -52,12 +58,22 @@ export default function RegistroForm({ onSalvar }: RegistroFormProps) {
             calcio: null,
             magnesio: null,
         }
-        onSalvar(medicoes);
-        setPh("");
-        setTemperatura("");
-        setAmonia("");
-        setNitrito("");
-        setNitrato("");
+
+        try {
+            await onSalvar(medicoes);
+            // Só limpa os campos se salvou de verdade; se falhar, o usuário não perde o que digitou.
+            setPh("");
+            setTemperatura("");
+            setAmonia("");
+            setNitrito("");
+            setNitrato("");
+        } catch (e) {
+            if (e instanceof Error) {
+                setErro(e.message);
+            }
+        } finally {
+            setSalvando(false);
+        }
     }
 
     return (
@@ -67,8 +83,13 @@ export default function RegistroForm({ onSalvar }: RegistroFormProps) {
             <TextInput style={styles.campo} placeholder="Amônia (ppm)" value={amonia} onChangeText={setAmonia} keyboardType="decimal-pad" />
             <TextInput style={styles.campo} placeholder="Nitrito (ppm) — opcional" value={nitrito} onChangeText={setNitrito} keyboardType="decimal-pad" />
             <TextInput style={styles.campo} placeholder="Nitrato (ppm) — opcional" value={nitrato} onChangeText={setNitrato} keyboardType="decimal-pad" />
-            <Pressable style={styles.botaoAdicionar} onPress={salvarRegistro}>
-                <Text style={styles.textoBotaoAdicionar}>Salvar</Text>
+            {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+            <Pressable
+                style={[styles.botaoAdicionar, salvando && styles.botaoDesabilitado]}
+                onPress={salvarRegistro}
+                disabled={salvando}
+            >
+                <Text style={styles.textoBotaoAdicionar}>{salvando ? "Salvando..." : "Salvar"}</Text>
             </Pressable>
         </View>
     )
@@ -91,8 +112,14 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: "center",
     },
+    botaoDesabilitado: {
+        opacity: 0.6,
+    },
     textoBotaoAdicionar: {
         color: "#ffffff",
         fontWeight: "bold",
+    },
+    erro: {
+        color: "#dc2626",
     },
 });

@@ -1,23 +1,35 @@
-import { RegistroParametro, NovoRegistroParametro } from "@/types"
-import { createContext, ReactNode, useContext, useState } from "react";
+import { NovoRegistroParametro, Alerta } from "@/types"
+import { createContext, ReactNode, useContext} from "react";
+import { cadastrarRegistro } from "@/services/registroService";
+import { useAuthContext } from "./AuthContext";
+import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 
 type RegistroContextType = {
-    registros: RegistroParametro[];
-    adicionarRegistro: (novoRegistro: NovoRegistroParametro) => void;
+    adicionarRegistro: (novoRegistro: NovoRegistroParametro) => Promise<Alerta[]>;
 }
-
 const RegistroContext = createContext<RegistroContextType | null>(null);
 
 export function RegistroProvider({ children }: { children: ReactNode }) {
-    const [registros, setRegistros] = useState<RegistroParametro[]>([]);
+    
+    const { token, sair } = useAuthContext();
 
-    function adicionarRegistro(novoRegistro: NovoRegistroParametro) {
-        const registro: RegistroParametro = { ...novoRegistro, idParametro: Date.now() };
-        setRegistros([...registros, registro]);
+    async function adicionarRegistro(novoRegistro: NovoRegistroParametro) {
+        if (token === null) {
+            throw new Error("Usuário não autenticado");
+        }
+
+        try {
+            const alertas = await cadastrarRegistro(token, novoRegistro);
+            return alertas;
+        } catch (error) {
+            if (ehSessaoExpirada(error)) {
+                await sair(MENSAGEM_SESSAO_EXPIRADA);
+            }
+            throw error; // Repassa o erro para o formulário, que vai mostrar a mensagem e manter os campos preenchidos.
+        }
     }
 
     const value: RegistroContextType = {
-        registros,
         adicionarRegistro
     };
 

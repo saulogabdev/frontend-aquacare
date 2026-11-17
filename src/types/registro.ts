@@ -1,3 +1,5 @@
+export type Severidade = 'ATENCAO' | 'CRITICO';
+
 export type RegistroParametro = {
   idParametro: number;
   idAquario: number;
@@ -15,4 +17,9 @@ export type RegistroParametro = {
   magnesio: number | null;
 };
 
-export type NovoRegistroParametro = Omit<RegistroParametro, 'idParametro'>;
+export type Alerta = {
+  mensagem: string;
+  severidade: Severidade;
+};
+
+export type NovoRegistroParametro = Omit<RegistroParametro, 'idParametro' | 'dataHora'>;
