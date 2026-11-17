@@ -8,6 +8,20 @@ export const API_URL = apiUrl;
 
 export const MENSAGEM_SESSAO_EXPIRADA = 'Sua sessão expirou. Entre novamente.';
 
+export const MENSAGEM_SEM_CONEXAO = 'Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.';
+
+// Use no lugar do fetch em todos os services. Quando nem dá para falar com o servidor (sem internet,
+// backend desligado, IP errado), o fetch lança um erro técnico em inglês ("Failed to fetch" na web,
+// "Network request failed" no celular). Aqui ele vira uma mensagem clara para o usuário.
+// Respostas de erro do servidor (400, 403, 500...) NÃO passam por aqui: continuam com o erroDaResposta.
+export async function apiFetch(url: string, opcoes?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, opcoes);
+  } catch {
+    throw new Error(MENSAGEM_SEM_CONEXAO);
+  }
+}
+
 // Erro de uma chamada à API, guardando o status HTTP (como uma exceção própria em Java).
 export class ErroApi extends Error {
   status: number;

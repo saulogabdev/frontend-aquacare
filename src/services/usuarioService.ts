@@ -1,7 +1,7 @@
-import { API_URL, erroDaResposta } from './api';
+import { API_URL, apiFetch, erroDaResposta } from './api';
 
 export async function login(email: string, senha: string): Promise<string> {
-    const response = await fetch(`${API_URL}/usuarios/login`, {
+    const response = await apiFetch(`${API_URL}/usuarios/login`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ email, senha }),

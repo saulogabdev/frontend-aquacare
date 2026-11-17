@@ -1,8 +1,8 @@
-import { API_URL, erroDaResposta } from "./api";
+import { API_URL, apiFetch, erroDaResposta } from "./api";
 import { Aquario, NovoAquario } from "@/types";
 
 export async function listarMeusAquarios(token: string): Promise<Aquario[]> {
-    const response = await fetch(`${API_URL}/aquarios/meus`, {
+    const response = await apiFetch(`${API_URL}/aquarios/meus`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -18,7 +18,7 @@ export async function listarMeusAquarios(token: string): Promise<Aquario[]> {
 }
 
 export async function cadastrarAquario(token: string, novoAquario: NovoAquario): Promise<void> {
-    const response = await fetch(`${API_URL}/aquarios/cadastrar`, {
+    const response = await apiFetch(`${API_URL}/aquarios/cadastrar`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
