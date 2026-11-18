@@ -23,3 +23,13 @@ export type Alerta = {
 };
 
 export type NovoRegistroParametro = Omit<RegistroParametro, 'idParametro' | 'dataHora'>;
+
+// Estado geral do aquário, calculado pelo backend a partir dos alertas:
+// nenhum alerta = SAUDAVEL; algum CRITICO = CRITICO; só ATENCAO = ATENCAO.
+export type EstadoAquario = 'SAUDAVEL' | 'ATENCAO' | 'CRITICO';
+
+// Resposta de GET /aquarios/{id}/diagnostico (reanalisa o último registro + cardume mínimo).
+export type Diagnostico = {
+  estado: EstadoAquario;
+  alertas: Alerta[];
+};

@@ -9,7 +9,8 @@ export default function Parametros() {
     const {aquarios, idSelecionado} = useAquarioContext();
     const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
     const {adicionarRegistro} = useRegistroContext();
-    const [alertas, setAlertas] = useState<Alerta[] | null>(null);
+    const [alertasPorAquario, setAlertasPorAquario] = useState<Record<number, Alerta[]>>({});
+    const alertas = idSelecionado !== null ? alertasPorAquario[idSelecionado] ?? null : null;
 
     async function salvarRegistro(medicoes: MedicoesRegistro) {
         if (!aquarioSelecionado) {
@@ -19,7 +20,7 @@ export default function Parametros() {
             idAquario: aquarioSelecionado.id,
             ...medicoes
         });
-        setAlertas(novosAlertas);
+        setAlertasPorAquario({ ...alertasPorAquario, [aquarioSelecionado.id]: novosAlertas });
     }
 
     return (

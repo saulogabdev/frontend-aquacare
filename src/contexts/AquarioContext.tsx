@@ -89,7 +89,7 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
         adicionarAquario,
         selecionarAquario,
         erro,
-        carregando
+        carregando,
     };
 
     return (

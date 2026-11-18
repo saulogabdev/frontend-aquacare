@@ -485,12 +485,27 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
    remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
    No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+12. **Campo `parametro` no `Alerta` (18/11):** o protótipo pinta cada valor do registro (pH, temp, NH3...) de
+    verde/amarelo/vermelho. Para isso o app precisa saber a QUAL parâmetro o alerta se refere (hoje só há o
+    texto). Pedir enum `parametro` (PH, TEMPERATURA, AMONIA, NITRITO, CALCIO, MAGNESIO...). **Juntar com os
+    itens 9 e 11 numa mudança só:** `Alerta { parametro, mensagem, severidade, recomendacao }`, salvo por
+    registro e devolvido no `GET /registro/aquario/{id}`. Sem isso, o app mostra os valores em cor neutra.
+11. **Alertas no histórico (17/11):** o `GET /registro/aquario/{id}` não traz os alertas de cada registro (eles
+    não são salvos). Recomendado: persistir os alertas (tabela `alerta` com FK do registro), pois guarda o que o
+    sistema disse NAQUELE momento. Alternativa rápida: recalcular com `analisar()` ao listar (usa as espécies
+    de hoje). Obs.: o "último resultado" já é recuperável pelo `GET /aquarios/{id}/diagnostico`, que reanalisa
+    o último registro → o app usa isso no item 3 (Dashboard **e** Parâmetros).
 10. **Decisão (16/11): regras extras viram TRABALHOS FUTUROS** (escopo de TCC técnico). Exemplos: KH baixo, CO2
     calculado por pH+KH (CO2 ≈ 3·KH·10^(7−pH)), oscilação de pH com KH baixo usando o histórico. Motivo: muitas
     condições e limites que exigem referência. Prioridade agora é só o item 9 (recomendação). Opcional se sobrar
     tempo: regra "KH baixo" de um registro só + campo KH no `RegistroForm` (hoje KH/GH/CO2/salinidade/cálcio/
     magnésio vão sempre `null`). **(A FAZER: Saulo vai pedir)** Ler o artigo e separar o que ele promete em
     "fazer agora" × "trabalhos futuros" (vira a seção do texto).
+    - **CO2 estimado (conferido 16/11 no artigo, versão de 24/09):** a seção 2.2.10 diz que KH + pH permitem
+      estimar o CO2 [Pádua 2010], mas SEM fórmula e FORA das regras de negócio da arquitetura. Se for
+      implementar: CO2 (mg/L) ≈ 3 × KH (dKH) × 10^(7 − pH) → "Equação 4" no artigo; só quando houver KH;
+      precisa confirmar a fórmula na fonte e citar uma faixa de referência de CO2. Candidata nº 1 se fizerem
+      UMA regra extra.
 
 ## Próximos passos
 
@@ -516,8 +531,8 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 | # | Item | Dono | Rotas da API |
 | --- | --- | --- | --- |
 | 1 | ✅ 4B-3: token vencido (401/403) → `sair()`, com `ErroApi` (erro com `status`) nos services | C | — |
-| 2 | Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
-| 3 | **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
+| 2 | ✅ Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
+| 3 | ✅ **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
 | 4 | Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
 | 5 | Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
 | 6 | Tela de cadastro de usuário (link no login) | C | `POST /usuarios/cadastrar` |
@@ -540,7 +555,7 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
   técnico em inglês ("Failed to fetch" na web, "Network request failed" no celular); o `apiFetch` troca por
   "Não foi possível conectar ao servidor...". **Todo service novo deve usar o `apiFetch`.**
 
-**Item 2 (16/11/2026): código pronto, FALTA TESTAR.** Saulo fez com aula; Claude fez a exibição dos alertas e o form.
+**Item 2 (16/11/2026): ✅ pronto e testado (17/11).** Saulo fez com aula; Claude fez a exibição dos alertas e o form.
 - Tipos (`types/registro.ts`): `Severidade = 'ATENCAO' | 'CRITICO'`, `Alerta { mensagem, severidade }`.
   `NovoRegistroParametro` agora tira `idParametro` **e** `dataHora` (a data é definida pelo servidor).
 - `registroService.ts`: `cadastrarRegistro(token, novo): Promise<Alerta[]>` (como o `cadastrarAquario`, mas lê o
@@ -559,7 +574,43 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - Testes a fazer: pH 6,5/24/0 → verde · 7,5/24/0 → crítico pH · 6,5/30/0 → crítico temperatura ·
   8,5/30/2 → 3 críticos · 6,5/24/0 + nitrito 1 → atenção · backend desligado → sem conexão, campos ficam ·
   salvar vazio → mensagem.
-- Ideia pendente (Saulo): `useEffect` que zera os alertas (`setAlertas(null)`) quando o `idSelecionado` muda.
+- ~~`useEffect` que zera os alertas~~ → o lint acusa `react-hooks/set-state-in-effect` (setState dentro de efeito
+  = render extra com a tela errada). **PENDENTE (Saulo, provisório):** trocar por
+  `resultado: { idAquario, alertas } | null` e calcular `const alertas = resultado?.idAquario === idSelecionado
+  ? resultado.alertas : null` (valor calculado, não estado). Regra: o que dá para calcular, não vira estado.
+
+**Item 3 (18/11/2026): ✅ pronto e testado.** Saulo fez com aula (service + carregamento); Claude fez tipos e cartão.
+- Tipos (`types/registro.ts`): `EstadoAquario = 'SAUDAVEL' | 'ATENCAO' | 'CRITICO'`, `Diagnostico { estado, alertas }`.
+- `aquarioService.buscarDiagnostico(token, idAquario)`: `GET /aquarios/{id}/diagnostico`. **400 → `null`**
+  (aquário sem registro não é erro). O `if` do status específico vem ANTES do `!response.ok`.
+- `DiagnosticoCard`: tabela `aparencia: Record<EstadoAquario, {rotulo, fundo, texto, borda}>` em vez de ternários
+  encadeados (se surgir um estado novo, o TypeScript acusa a falta).
+- Dashboard (`index.tsx`): estados LOCAIS (`diagnostico`, `carregandoDiagnostico`, `erroDiagnostico`), não no
+  Context (só o Dashboard usa). Chama o service direto (sem Context no meio) e trata a sessão expirada no catch.
+- 🆕 **`useFocusEffect(useCallback(...))`** (expo-router): roda toda vez que a ABA ganha foco. As abas não são
+  destruídas ao trocar, então o `useEffect` não recarregaria depois de um registro feito em Parâmetros.
+  O hook pertence à tela onde é escrito (o Dashboard, que é quem mostra o dado).
+- 🐞 Bug corrigido: faltava `idSelecionado` nas dependências do `useCallback` → closure desatualizada (a função
+  "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
+  função entra na lista.
+
+**Próxima sessão (estimativa: ~1 h com aula, ~30 min se Claude fizer o repetitivo):** *(itens 1–3 abaixo feitos em 18/11)*
+1. Corrigir o lint acima (5–10 min).
+2. Item 3: `buscarDiagnostico(token, idAquario)` → `GET /aquarios/{id}/diagnostico` (`{ estado, alertas }`);
+   carregar quando o aquário muda; cartão do estado **só no Dashboard**.
+   **Decisão (18/11), divisão das telas:** Parâmetros = "como está a ÁGUA?" → formulário + seção compacta
+   "Alertas do último registro" (resumo colorido + mensagens + link "Ver diagnóstico") + histórico com valores
+   coloridos + gráfico. Dashboard = "como está o AQUÁRIO?" → diagnóstico geral (alertas da água + cardume abaixo
+   do mínimo + futuras regras). Fonte dos alertas do último registro: hoje = resposta do POST (some ao fechar o
+   app); depois dos itens 11/12 do Brayan = registro mais recente do histórico (persistente).
+   ✅ Lint corrigido (18/11): `resultado: { idAquario, alertas } | null` + `alertas` calculado.
+   Limitação conhecida: registrar em outro aquário sobrescreve o resultado. **Plano B** (só se o Brayan não
+   salvar os alertas por registro): `Record<number, Alerta[]>` por aquário. Não fazer antes: vira lixo quando
+   os alertas vierem no histórico (aí a seção usa `historico[0].alertas` e o app não guarda nada).
+3. ✅ Conferido (18/11): aquário sem registro → **400** com a mensagem (o `GlobalExceptionHandler` converte a
+   `IllegalArgumentException`). Tratar como "Faça a primeira medição", não como erro.
+   Obs.: diagnóstico de aquário de outro usuário → `AccessDeniedException` → 403 (o app trataria como sessão
+   expirada; não acontece no fluxo normal, pois o app só usa os aquários do próprio usuário).
 
 **Semana 2: o restante dos requisitos**
 
