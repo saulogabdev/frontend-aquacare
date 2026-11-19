@@ -3,13 +3,14 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import AquarioCard from "@/components/AquarioCard";
 import AquarioForm from "@/components/AquarioForm";
 import { useAquarioContext,  } from "@/contexts/AquarioContext";
-import { useFocusEffect } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Diagnostico } from "@/types/registro";
 import { buscarDiagnostico } from "@/services/aquarioService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import DiagnosticoCard from "@/components/DiagnosticoCard";
+import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
 
 export default function Index() {
   const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando } = useAquarioContext();
@@ -19,6 +20,7 @@ export default function Index() {
   const [carregandoDiagnostico, setCarregandoDiagnostico] = useState<boolean>(false);
   const [erroDiagnostico, setErroDiagnostico] = useState("");
   const { token, sair } = useAuthContext();
+  const { peixes } = usePeixesDoAquario();
 
   useFocusEffect(
     useCallback(() => {
@@ -70,6 +72,18 @@ export default function Index() {
       {carregandoDiagnostico && <Text>Carregando diagnóstico...</Text>}
       {erroDiagnostico !== "" && <Text>{erroDiagnostico}</Text>}
       {diagnostico && <DiagnosticoCard diagnostico={diagnostico} />}
+
+      {aquarioSelecionado && (
+        <View style={styles.peixes}>
+          <Text style={styles.tituloPeixes}>Peixes no aquário</Text>
+          {peixes.length === 0 ? (
+            <Text style={styles.textoAviso}>Nenhuma espécie. Sem espécies, o diagnóstico não avalia a água.</Text>
+          ) : (
+            <Text>{peixes.map((p) => `${p.animal?.nomePopular ?? "?"} (${p.quantidade})`).join(" · ")}</Text>
+          )}
+          <Link href="/especies" style={styles.link}>Gerenciar espécies →</Link>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -90,6 +104,22 @@ const styles = StyleSheet.create({
   textoAviso: {
     color: "#6b7280",
     textAlign: "center",
+  },
+  peixes: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 16,
+    padding: 16,
+    gap: 6,
+  },
+  tituloPeixes: {
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  link: {
+    color: "#0891b2",
+    fontWeight: "bold",
   },
   erro: {
     color: "#dc2626",

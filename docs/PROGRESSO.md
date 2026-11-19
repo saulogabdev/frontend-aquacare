@@ -485,6 +485,15 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
    remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
    No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+14. **Compatibilidade deve ALERTAR, não bloquear (19/11, ideia do Saulo).** Hoje `associar` lança 400 e impede.
+    Mas o artigo (2.4) diz "emitindo alertas quando combinações inadequadas são identificadas", e um SAD
+    apoia, não decide. Bloquear impede cadastrar o aquário REAL (o peixe já está lá) e deixa justamente o
+    aquário mais arriscado sem monitoramento. Proposta: `associar` sempre salva; o `DiagnosticoService` inclui
+    os alertas de compatibilidade (`isCompativel` já existe); opcional: rota de checagem prévia sem gravar
+    (ex.: `GET /aquarios/{id}/compatibilidade/{idAnimal}`) para o app avisar com "Adicionar mesmo assim".
+13. **Associação duplicada (19/11):** `POST /animal-aquario/associar` aceita a mesma espécie duas vezes no mesmo
+    aquário (duas linhas). A regra do grupo mínimo avalia cada linha → 2 × 4 neons gera alerta falso, mesmo
+    com 8. O app já contorna (soma com PUT), mas o backend deveria impedir ou somar.
 12. **Campo `parametro` no `Alerta` (18/11):** o protótipo pinta cada valor do registro (pH, temp, NH3...) de
     verde/amarelo/vermelho. Para isso o app precisa saber a QUAL parâmetro o alerta se refere (hoje só há o
     texto). Pedir enum `parametro` (PH, TEMPERATURA, AMONIA, NITRITO, CALCIO, MAGNESIO...). **Juntar com os
@@ -594,6 +603,24 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
 
+**Item 8 adiantado (18/11/2026): associar espécies — ✅ pronto (Claude), revisado e testado pelo Saulo (19/11).**
+Motivo de adiantar: sem espécie associada o SAD não analisa nada (antes só dava com INSERT no banco).
+- Tipos (`types/especie.ts`) alinhados com a API: `Animal` (padraoTerritorial, tamanhoMedio, regiaoNado TOPO/MEIO/
+  FUNDO, lc50, quantidadeMinimaGrupo); `AnimalAquario { id, idAnimal, idAquario, quantidade, dataAdicao }` (a API
+  manda só o `idAnimal`; o app junta com o catálogo); `DadosAnimalAquario` (corpo do POST/PUT).
+- `especieService.ts`: `listarAnimais`, `listarAnimaisDoAquario`, `associarAnimal`, `atualizarQuantidade`, `removerAnimalDoAquario`.
+- `EspecieContext`: o **catálogo** (igual para todos, usado por 2 telas) → Context, carregado uma vez.
+- 🆕 **Hook customizado `hooks/usePeixesDoAquario.ts`**: junta estado + `useFocusEffect` + ações (adicionar/remover)
+  para reaproveitar em 2 telas (como extrair um @Service). Cada tela tem a SUA cópia do estado.
+  Se a espécie já está no aquário, soma a quantidade (PUT) em vez de criar outra linha (POST).
+- Aba **Espécies**: seção "No aquário X" (lista + Remover), busca por nome (filtro calculado, não estado) e o
+  catálogo com `EspecieCard` ("+ Adicionar ao aquário" → quantidade → Confirmar).
+- **Compatibilidade (artigo 2.4):** o backend valida ao associar e devolve 400 com o motivo → aparece em vermelho
+  no cartão. Ex.: Neon + Acará-bandeira = "risco de predação".
+- Dashboard: card "Peixes no aquário" (resumo) + link "Gerenciar espécies →".
+- `docs/seed-especies.sql`: 9 espécies de exemplo (rodado no banco deste PC em 18/11). Em outro PC, rodar de novo.
+  Valores aproximados: **conferir com as referências do artigo antes da banca.**
+
 **Próxima sessão (estimativa: ~1 h com aula, ~30 min se Claude fizer o repetitivo):** *(itens 1–3 abaixo feitos em 18/11)*
 1. Corrigir o lint acima (5–10 min).
 2. Item 3: `buscarDiagnostico(token, idAquario)` → `GET /aquarios/{id}/diagnostico` (`{ estado, alertas }`);
@@ -617,7 +644,7 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 | # | Item | Dono | Rotas da API |
 | --- | --- | --- | --- |
 | 7 | Enciclopédia: lista de animais e plantas, busca por nome, tela de detalhe (`especie/[id]`) | C | `/animal/...`, `/planta/...` |
-| 8 | Associar espécies ao aquário e listar as espécies do aquário | C | `/animal-aquario/...`, `/planta-aquario/...` |
+| 8 | ✅ Associar espécies ao aquário e listar as espécies do aquário | C | `/animal-aquario/...`, `/planta-aquario/...` |
 | 9 | Gráficos da variação de cada parâmetro (biblioteca a escolher, compatível com o Expo Go) | C | `GET /registro/aquario/{id}` |
 | 10 | Parâmetros ideais e espécies recomendadas | C | `/aquarios/{id}/parametros-ideais`, `/especies-recomendadas` |
 | 11 | Editar e excluir aquário | C | `PUT/DELETE /aquarios/{id}` |

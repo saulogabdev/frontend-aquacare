@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { AquarioProvider } from "@/contexts/AquarioContext";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { RegistroProvider } from "@/contexts/RegistroContext";
+import { EspecieProvider } from "@/contexts/EspecieContext";
 
 function NavegacaoRaiz() {
   const { token, carregando } = useAuthContext();
@@ -27,7 +28,9 @@ export default function RootLayout() {
     <AuthProvider>
       <AquarioProvider>
         <RegistroProvider>
-          <NavegacaoRaiz/>
+          <EspecieProvider>
+            <NavegacaoRaiz/>
+          </EspecieProvider>
         </RegistroProvider>
       </AquarioProvider>
     </AuthProvider>

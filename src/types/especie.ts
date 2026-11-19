@@ -1,7 +1,7 @@
+// Tipos alinhados com o AnimalResponse do backend (GET /animal/listar-todos).
 export type Agressividade = 'PACIFICO' | 'SEMI_AGRESSIVO' | 'AGRESSIVO';
-export type Porte = 'PEQUENO' | 'MEDIO' | 'GRANDE';
-export type RegiaoNado = 'SUPERFICIE' | 'MEIO' | 'FUNDO';
-export type HabitoAlimentar = 'ONIVORO' | 'CARNIVORO' | 'HERBIVORO';
+export type PadraoTerritorial = 'NAO_TERRITORIAL' | 'TERRITORIAL';
+export type RegiaoNado = 'TOPO' | 'MEIO' | 'FUNDO';
 export type Nivel = 'BAIXA' | 'MEDIA' | 'ALTA';
 export type Dificuldade = 'FACIL' | 'MEDIA' | 'DIFICIL';
 export type Crescimento = 'LENTO' | 'MEDIO' | 'RAPIDO';
@@ -20,12 +20,16 @@ export type Animal = {
   salinidadeMin: number | null;
   salinidadeMax: number | null;
   agressividade: Agressividade;
-  porte: Porte;
+  padraoTerritorial: PadraoTerritorial;
+  tamanhoMedio: number;
   regiaoNado: RegiaoNado;
-  habitoAlimentar: HabitoAlimentar;
+  habitoAlimentar: string;
+  lc50Amonia: number | null;
+  lc50Nitrito: number | null;
   sensibilidadeAmonia: Nivel;
   sensibilidadeNitrito: Nivel;
   sensibilidadeNitrato: Nivel;
+  quantidadeMinimaGrupo: number | null;
 };
 
 export type Planta = {
@@ -44,12 +48,21 @@ export type Planta = {
   phMax: number;
 };
 
+// Resposta de GET /animal-aquario/aquario/{id}: a API devolve só o idAnimal (não o objeto),
+// então o app junta com a lista de animais para saber o nome.
 export type AnimalAquario = {
   id: number;
+  idAnimal: number;
   idAquario: number;
-  animal: Animal;
   quantidade: number;
   dataAdicao: string;
+};
+
+// Corpo de POST /animal-aquario/associar e PUT /animal-aquario/{id}.
+export type DadosAnimalAquario = {
+  idAnimal: number;
+  idAquario: number;
+  quantidade: number;
 };
 
 export type PlantaAquario = {
