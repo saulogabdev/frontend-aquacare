@@ -542,7 +542,7 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 | 1 | ✅ 4B-3: token vencido (401/403) → `sair()`, com `ErroApi` (erro com `status`) nos services | C | — |
 | 2 | ✅ Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
 | 3 | ✅ **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
-| 4 | Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
+| 4 | ✅ Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
 | 5 | Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
 | 6 | Tela de cadastro de usuário (link no login) | C | `POST /usuarios/cadastrar` |
 
@@ -602,6 +602,19 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - 🐞 Bug corrigido: faltava `idSelecionado` nas dependências do `useCallback` → closure desatualizada (a função
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
+
+**Item 4 (20/11/2026): histórico de registros — Saulo fez com aula (passos 1–4), Claude fez o `RegistroCard`.**
+- `registroService.listarRegistros(token, idAquario)` → `GET /registro/aquario/{id}` (vem SEM ordenação).
+- `parametros.tsx`: estados locais (só esta tela usa → sem hook). 🆕 `recarregarRegistros` com `useCallback`
+  chamado de DOIS lugares: no `useFocusEffect` (tela aparece/troca de aquário) e depois de salvar (mesma tela,
+  o foco não muda). Regra: hook próprio só quando há reuso em mais de uma tela.
+- 🆕 Ordenação calculada: `[...registros].sort((a, b) => b.dataHora.localeCompare(a.dataHora))` — copia antes
+  porque `.sort()` altera a lista original (diferente de `.map`/`.filter`); ISO ordena como texto.
+- Saulo também fez o plano B dos alertas: `alertasPorAquario: Record<number, Alerta[]>` (não somem ao registrar
+  em outro aquário).
+- `RegistroCard`: data formatada à mão (sem `new Date`, o backend manda hora local sem fuso) e colunas pH/Temp/
+  Amônia/NO₂/NO₃ geradas por uma lista. Cor neutra até o backend mandar o `parametro` no alerta (item 12).
+- Pendências do Saulo: `await recarregarRegistros()` no `salvarRegistro`; declarar o `recarregarRegistros` antes.
 
 **Item 8 adiantado (18/11/2026): associar espécies — ✅ pronto (Claude), revisado e testado pelo Saulo (19/11).**
 Motivo de adiantar: sem espécie associada o SAD não analisa nada (antes só dava com INSERT no banco).
