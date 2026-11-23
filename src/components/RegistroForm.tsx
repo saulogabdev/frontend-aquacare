@@ -1,6 +1,7 @@
-import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-native";
+import { View, TextInput, Text, StyleSheet, Keyboard } from "react-native";
 import { useState } from "react";
 import { NovoRegistroParametro } from "@/types";
+import { BotaoGradiente } from "@/components/ui";
 
 export type MedicoesRegistro = Omit<NovoRegistroParametro, "idAquario">;
 
@@ -84,13 +85,7 @@ export default function RegistroForm({ onSalvar }: RegistroFormProps) {
             <TextInput style={styles.campo} placeholder="Nitrito (ppm) — opcional" value={nitrito} onChangeText={setNitrito} keyboardType="decimal-pad" />
             <TextInput style={styles.campo} placeholder="Nitrato (ppm) — opcional" value={nitrato} onChangeText={setNitrato} keyboardType="decimal-pad" />
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
-            <Pressable
-                style={[styles.botaoAdicionar, salvando && styles.botaoDesabilitado]}
-                onPress={salvarRegistro}
-                disabled={salvando}
-            >
-                <Text style={styles.textoBotaoAdicionar}>{salvando ? "Salvando..." : "Salvar"}</Text>
-            </Pressable>
+            <BotaoGradiente texto={salvando ? "Salvando..." : "Salvar registro"} onPress={salvarRegistro} carregando={salvando} icone="checkmark" />
         </View>
     )
 }
@@ -100,24 +95,11 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     campo: {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#f9fafb",
         borderWidth: 1,
         borderColor: "#e5e7eb",
         borderRadius: 12,
         padding: 12,
-    },
-    botaoAdicionar: {
-        backgroundColor: "#0891b2",
-        padding: 12,
-        borderRadius: 12,
-        alignItems: "center",
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
-    },
-    textoBotaoAdicionar: {
-        color: "#ffffff",
-        fontWeight: "bold",
     },
     erro: {
         color: "#dc2626",

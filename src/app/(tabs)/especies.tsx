@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
+import { cores, raio } from "@/theme";
 import EspecieCard from "@/components/EspecieCard";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useEspecieContext } from "@/contexts/EspecieContext";
@@ -31,45 +34,47 @@ export default function Especies() {
     }
 
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-            <Text style={styles.titulo}>Espécies</Text>
+        <Tela>
+            <TituloTela titulo="Espécies" subtitulo="Catálogo e espécies do seu aquário" />
 
             {/* Peixes do aquário selecionado */}
-            <View style={styles.secao}>
+            <Card>
                 <Text style={styles.tituloSecao}>
                     {aquarioSelecionado ? `No aquário ${aquarioSelecionado.nome}` : "Nenhum aquário selecionado"}
                 </Text>
                 {carregandoPeixes && <ActivityIndicator color="#0891b2" />}
-                {erroPeixes !== "" && <Text style={styles.erro}>{erroPeixes}</Text>}
+                <MensagemErro texto={erroPeixes} />
                 {aquarioSelecionado && !carregandoPeixes && peixes.length === 0 && (
-                    <Text style={styles.textoAviso}>
-                        Nenhuma espécie ainda. Adicione abaixo: sem espécies, o diagnóstico não consegue avaliar a água.
-                    </Text>
+                    <EstadoVazio icone="fish-outline" titulo="Nenhuma espécie ainda" texto="Adicione pelo catálogo abaixo: sem espécies, o diagnóstico não consegue avaliar a água." />
                 )}
                 {peixes.map((peixe) => (
                     <View key={peixe.id} style={styles.linhaPeixe}>
+                        <Ionicons name="fish" size={18} color={cores.primaria} />
                         <Text style={styles.nomePeixe}>
                             {peixe.animal?.nomePopular ?? `Espécie #${peixe.idAnimal}`}
                         </Text>
                         <Text style={styles.quantidade}>{peixe.quantidade} un.</Text>
-                        <Pressable onPress={() => removerPeixe(peixe.id)}>
-                            <Text style={styles.remover}>Remover</Text>
+                        <Pressable onPress={() => removerPeixe(peixe.id)} style={styles.botaoRemover} accessibilityLabel="Remover">
+                            <Ionicons name="trash-outline" size={18} color={cores.perigo} />
                         </Pressable>
                     </View>
                 ))}
-                {erroRemover !== "" && <Text style={styles.erro}>{erroRemover}</Text>}
-            </View>
+                <MensagemErro texto={erroRemover} />
+            </Card>
 
             {/* Catálogo */}
-            <TextInput
-                style={styles.busca}
+            <View style={styles.busca}>
+                <Ionicons name="search" size={18} color={cores.textoFraco} />
+                <TextInput
+                style={styles.campoBusca}
                 placeholder="Buscar espécie..."
                 value={busca}
                 onChangeText={setBusca}
-            />
+                />
+            </View>
 
             {carregando && <ActivityIndicator color="#0891b2" />}
-            {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+            <MensagemErro texto={erro} />
             {!carregando && erro === "" && animaisFiltrados.length === 0 && (
                 <Text style={styles.textoAviso}>Nenhuma espécie encontrada.</Text>
             )}
@@ -81,61 +86,58 @@ export default function Especies() {
                     onAdicionar={aquarioSelecionado ? (quantidade) => adicionar(animal.idAnimal, quantidade) : undefined}
                 />
             ))}
-        </ScrollView>
+        </Tela>
     );
 }
 
 const styles = StyleSheet.create({
-    scroll: {
-        flex: 1,
-    },
-    conteudo: {
-        gap: 12,
-        padding: 20,
-    },
-    titulo: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "#111827",
-    },
-    secao: {
-        backgroundColor: "#ecfeff",
-        borderRadius: 16,
-        padding: 16,
-        gap: 8,
-    },
     tituloSecao: {
+        fontSize: 18,
         fontWeight: "bold",
-        color: "#0e7490",
+        color: cores.texto,
     },
     linhaPeixe: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
+        padding: 10,
+        borderRadius: raio.pequeno,
+        borderWidth: 1,
+        borderColor: cores.bordaClara,
     },
     nomePeixe: {
         flex: 1,
-        color: "#111827",
+        color: cores.texto,
+        fontWeight: "600",
     },
     quantidade: {
-        color: "#374151",
+        color: cores.textoSecundario,
         fontWeight: "bold",
     },
-    remover: {
-        color: "#dc2626",
-        marginLeft: 8,
+    botaoRemover: {
+        width: 34,
+        height: 34,
+        borderRadius: raio.pilula,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: cores.perigoClaro,
     },
     busca: {
-        backgroundColor: "#ffffff",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        backgroundColor: cores.branco,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 12,
-        padding: 12,
+        borderColor: cores.borda,
+        borderRadius: raio.pequeno,
+        paddingHorizontal: 12,
+    },
+    campoBusca: {
+        flex: 1,
+        paddingVertical: 12,
     },
     textoAviso: {
-        color: "#6b7280",
-    },
-    erro: {
-        color: "#dc2626",
+        color: cores.textoSecundario,
+        textAlign: "center",
     },
 });

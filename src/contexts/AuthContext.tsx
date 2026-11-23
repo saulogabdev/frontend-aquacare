@@ -1,9 +1,13 @@
 import { createContext, useState, ReactNode, useContext, useEffect, useCallback } from "react";
-import { login } from "@/services/usuarioService";
+import { buscarMeuUsuario, login } from "@/services/usuarioService";
+import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
+import { Usuario } from "@/types";
 import { obterToken, salvarToken, removerToken } from "@/services/tokenStorage";
 
 type AuthContextType = {
     token: string | null,
+    // Dados do usuário logado (GET /usuarios/me): nome no cabeçalho e no Perfil, e a role (admin).
+    usuario: Usuario | null,
     carregando: boolean,
     aviso: string,
     entrar: (email: string, senha: string) => Promise<void>,
@@ -17,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [carregando, setCarregando] = useState<boolean>(true);
     // Mensagem mostrada na tela de login depois de uma saída automática (ex.: sessão expirada).
     const [aviso, setAviso] = useState("");
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
 
     useEffect(() => {
         async function verificarToken() {
@@ -45,8 +50,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(null);
     }, []);
 
+    // Sempre que o token muda (entrou ou saiu), busca os dados do usuário logado.
+    useEffect(() => {
+        async function carregarUsuario() {
+            if (token === null) {
+                setUsuario(null);
+                return;
+            }
+            try {
+                setUsuario(await buscarMeuUsuario(token));
+            } catch (error) {
+                if (ehSessaoExpirada(error)) {
+                    await sair(MENSAGEM_SESSAO_EXPIRADA);
+                }
+                // Outros erros (ex.: sem conexão): o app continua funcionando, só sem o nome.
+            }
+        }
+        carregarUsuario();
+    }, [token, sair]);
+
     return (
-        <AuthContext.Provider value={{ token, carregando, aviso, entrar, sair }}>
+        <AuthContext.Provider value={{ token, usuario, carregando, aviso, entrar, sair }}>
             {children}
         </AuthContext.Provider>
     );

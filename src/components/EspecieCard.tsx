@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Keyboard } from "react-native";
 import { Agressividade, Animal, RegiaoNado } from "@/types";
+import { sombra } from "@/theme";
 
 type EspecieCardProps = {
     animal: Animal;
@@ -108,10 +109,9 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
 
 const styles = StyleSheet.create({
     cartao: {
+        ...sombra,
         backgroundColor: "#ffffff",
         borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
         padding: 16,
         gap: 6,
     },

@@ -530,7 +530,11 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    Os services continuam recebendo o token por parâmetro, e quem passa é o Context.
 5. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
 
-## Plano final (13/11/2026 → ~27/11/2026)
+## Plano final (13/11/2026 → 27/11/2026, entrega confirmada em 23/11)
+
+**Reta final (23/11):** 23–24 = item 5 (visual do protótipo) + Perfil com `GET /usuarios/me` (Claude);
+25 = gráfico (item 9); 26–27 = testes no celular, prints, ensaio (Saulo). Trabalhos futuros: lembretes,
+equipamentos, admin, plantas (se sobrar tempo: editar/excluir aquário).
 
 Prioridade = o que mais pesa na apresentação (o SAD do artigo: registrar → analisar → alertar).
 Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o tempo apertar).
@@ -543,7 +547,7 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 | 2 | ✅ Registro de parâmetros pela API + mostrar os **alertas** devolvidos | S (diferencial) | `POST /registro/cadastrar` |
 | 3 | ✅ **Diagnóstico** do aquário ativo no Dashboard (estado SAUDÁVEL / ATENÇÃO / CRÍTICO + alertas) | S (diferencial) | `GET /aquarios/{id}/diagnostico` |
 | 4 | ✅ Histórico de registros na aba Parâmetros | C | `GET /registro/aquario/{id}` |
-| 5 | Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
+| 5 | ✅ Visual do protótipo: cabeçalho (logo + avatar + sair), ícones das abas, banner do aquário ativo, cards | C | — |
 | 6 | Tela de cadastro de usuário (link no login) | C | `POST /usuarios/cadastrar` |
 
 **Item 1 feito (13/11/2026), como funciona:**
@@ -602,6 +606,25 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - 🐞 Bug corrigido: faltava `idSelecionado` nas dependências do `useCallback` → closure desatualizada (a função
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
+
+**Item 5 (23/11/2026): visual do protótipo — feito pelo Claude, FALTA o Saulo revisar e testar no celular.**
+- Novas libs (via `npx expo install`, já vêm no Expo Go): `expo-linear-gradient` (degradês) e `@expo/vector-icons`
+  (ícones Ionicons).
+- `src/theme.ts`: cores, degradês, raios e sombra do protótipo num lugar só (as telas importam daqui).
+- `src/components/ui.tsx` (kit): `Tela` (fundo em degradê + rolagem), `TituloTela`, `Card`, `CabecalhoCard`
+  (título + botão "+ Novo"), `BotaoGradiente`, `BotaoContorno`, `EstadoVazio`, `MensagemErro`.
+- `Cabecalho.tsx` (+ `Logo`): logo do peixe, "AquaCare", iniciais do usuário e botão sair — usado como `header`
+  de todas as abas. Abas com ícones (cheio quando ativa, contorno quando não).
+- `AuthContext` agora tem `usuario` (GET `/usuarios/me`, carregado quando o token muda). Tipo `Usuario` corrigido
+  (`id`, não `idUsuario`). Usado no cabeçalho (iniciais) e no Perfil.
+- Dashboard: "Meus Aquários" com "+ Novo" (formulário abre/fecha), `BannerAquario` (degradê, litragem, tipo,
+  data de montagem, chips ciclado/CO₂/plantas), diagnóstico, "Espécies do Aquário", números (total de peixes,
+  espécies) e atalhos em degradê.
+- Parâmetros: card "Novo registro", alertas do último registro (+ link "Ver diagnóstico"), "Registros Diários" com
+  `RegistroCard` colorido por parâmetro (cores de identificação, como no protótipo).
+- Espécies, Perfil (avatar, nome, e-mail, membro desde, selo de admin, sair), Lembretes ("Em breve"),
+  Login e Cadastro no mesmo estilo. `utils/formatar.ts`: `formatarData`, `formatarDataHora`, `iniciais`.
+- Verificado: tsc + lint limpos e `npx expo export --platform web` compila todas as rotas.
 
 **Item 6 (20/11/2026): cadastro de usuário — código pronto (Claude), FALTA o Saulo revisar e testar.**
 - `usuarioService.cadastrarUsuario(nome, email, senha)` → `POST /usuarios/cadastrar` (201; e-mail repetido = 400

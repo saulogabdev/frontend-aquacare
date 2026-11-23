@@ -1,15 +1,17 @@
 import { View, Text, StyleSheet } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Diagnostico, EstadoAquario } from "@/types";
+import { raio, sombra } from "@/theme";
 
 type DiagnosticoCardProps = {
     diagnostico: Diagnostico;
 };
 
 // Cor e texto de cada estado ficam numa tabela, em vez de vários ternários espalhados.
-const aparencia: Record<EstadoAquario, { rotulo: string; fundo: string; texto: string; borda: string }> = {
-    SAUDAVEL: { rotulo: "Saudável", fundo: "#dcfce7", texto: "#15803d", borda: "#86efac" },
-    ATENCAO: { rotulo: "Atenção", fundo: "#fef3c7", texto: "#b45309", borda: "#fcd34d" },
-    CRITICO: { rotulo: "Crítico", fundo: "#fee2e2", texto: "#b91c1c", borda: "#fca5a5" },
+const aparencia: Record<EstadoAquario, { rotulo: string; fundo: string; texto: string; borda: string; icone: keyof typeof Ionicons.glyphMap }> = {
+    SAUDAVEL: { rotulo: "Saudável", fundo: "#dcfce7", texto: "#15803d", borda: "#86efac", icone: "checkmark-circle" },
+    ATENCAO: { rotulo: "Atenção", fundo: "#fef3c7", texto: "#b45309", borda: "#fcd34d", icone: "warning" },
+    CRITICO: { rotulo: "Crítico", fundo: "#fee2e2", texto: "#b91c1c", borda: "#fca5a5", icone: "alert-circle" },
 };
 
 export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
@@ -18,7 +20,10 @@ export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
     return (
         <View style={[styles.cartao, { backgroundColor: cores.fundo, borderColor: cores.borda }]}>
             <Text style={styles.titulo}>Diagnóstico do aquário</Text>
-            <Text style={[styles.estado, { color: cores.texto }]}>{cores.rotulo}</Text>
+            <View style={styles.linhaEstado}>
+                <Ionicons name={cores.icone} size={26} color={cores.texto} />
+                <Text style={[styles.estado, { color: cores.texto }]}>{cores.rotulo}</Text>
+            </View>
 
             {diagnostico.alertas.length === 0 ? (
                 <Text style={[styles.alerta, { color: cores.texto }]}>Nenhum problema encontrado no último registro.</Text>
@@ -38,8 +43,9 @@ export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
 
 const styles = StyleSheet.create({
     cartao: {
+        ...sombra,
         padding: 16,
-        borderRadius: 16,
+        borderRadius: raio.medio,
         borderWidth: 1,
         gap: 6,
     },
@@ -48,6 +54,11 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#6b7280",
         textTransform: "uppercase",
+    },
+    linhaEstado: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
     },
     estado: {
         fontSize: 22,

@@ -1,12 +1,17 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import BannerAquario from "@/components/BannerAquario";
+import { CabecalhoCard, Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
+import { cores, gradientes, raio, sombra } from "@/theme";
 
 import AquarioCard from "@/components/AquarioCard";
 import AquarioForm from "@/components/AquarioForm";
 import { useAquarioContext,  } from "@/contexts/AquarioContext";
-import { Link, useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Diagnostico } from "@/types/registro";
+import { Diagnostico, NovoAquario } from "@/types";
 import { buscarDiagnostico } from "@/services/aquarioService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import DiagnosticoCard from "@/components/DiagnosticoCard";
@@ -21,6 +26,16 @@ export default function Index() {
   const [erroDiagnostico, setErroDiagnostico] = useState("");
   const { token, sair } = useAuthContext();
   const { peixes } = usePeixesDoAquario();
+  // O formulário de novo aquário só aparece ao tocar em "+ Novo" (como no protótipo).
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  // Soma das quantidades de todas as espécies (valor calculado).
+  const totalPeixes = peixes.reduce((soma, peixe) => soma + peixe.quantidade, 0);
+
+  // Cria o aquário e fecha o formulário. Se der erro, o formulário continua aberto mostrando a mensagem.
+  async function criarAquario(novo: NovoAquario) {
+    await adicionarAquario(novo);
+    setMostrarFormulario(false);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -48,81 +63,186 @@ export default function Index() {
   );
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-      <Text>AQUARIO SELECIONADO: {aquarioSelecionado?.nome}</Text>
-      <AquarioForm onSalvar={adicionarAquario} />
+    <Tela>
+      <TituloTela titulo="Dashboard" subtitulo="Visão geral do seu aquário" />
 
-      {carregando && (
-        <View style={styles.aviso}>
-          <ActivityIndicator color="#0891b2" />
-          <Text style={styles.textoAviso}>Carregando aquários...</Text>
-        </View>
-      )}
+      {/* Meus aquários */}
+      <Card>
+        <CabecalhoCard
+          titulo="Meus Aquários"
+          acao={mostrarFormulario ? "Fechar" : "Novo"}
+          onAcao={() => setMostrarFormulario(!mostrarFormulario)}
+        />
+        {mostrarFormulario && <AquarioForm onSalvar={criarAquario} />}
 
-      {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
-
-      {listaVazia && (
-        <Text style={styles.textoAviso}>Você ainda não tem aquários. Cadastre o primeiro!</Text>
-      )}
-
-      {aquarios.map((aquario) => (
-        <AquarioCard key={aquario.id} aquario={aquario} onPress={() => selecionarAquario(aquario.id)} ativo={aquario.id === idSelecionado} />
-      ))}
-
-      {carregandoDiagnostico && <Text>Carregando diagnóstico...</Text>}
-      {erroDiagnostico !== "" && <Text>{erroDiagnostico}</Text>}
-      {diagnostico && <DiagnosticoCard diagnostico={diagnostico} />}
+        {carregando && <ActivityIndicator color={cores.primaria} />}
+        <MensagemErro texto={erro} />
+        {listaVazia && !mostrarFormulario && (
+          <EstadoVazio icone="fish-outline" titulo="Nenhum aquário criado" texto="Toque em + Novo para criar o primeiro." />
+        )}
+        {aquarios.map((aquario) => (
+          <AquarioCard key={aquario.id} aquario={aquario} onPress={() => selecionarAquario(aquario.id)} ativo={aquario.id === idSelecionado} />
+        ))}
+      </Card>
 
       {aquarioSelecionado && (
-        <View style={styles.peixes}>
-          <Text style={styles.tituloPeixes}>Peixes no aquário</Text>
-          {peixes.length === 0 ? (
-            <Text style={styles.textoAviso}>Nenhuma espécie. Sem espécies, o diagnóstico não avalia a água.</Text>
+        <>
+          <BannerAquario aquario={aquarioSelecionado} />
+
+          {/* Diagnóstico (SAD): estado geral + alertas */}
+          {carregandoDiagnostico && !diagnostico && <ActivityIndicator color={cores.primaria} />}
+          <MensagemErro texto={erroDiagnostico} />
+          {diagnostico ? (
+            <DiagnosticoCard diagnostico={diagnostico} />
           ) : (
-            <Text>{peixes.map((p) => `${p.animal?.nomePopular ?? "?"} (${p.quantidade})`).join(" · ")}</Text>
+            !carregandoDiagnostico && erroDiagnostico === "" && (
+              <Card>
+                <EstadoVazio icone="analytics-outline" titulo="Sem diagnóstico ainda" texto="Registre os parâmetros da água para receber a análise." />
+              </Card>
+            )
           )}
-          <Link href="/especies" style={styles.link}>Gerenciar espécies →</Link>
-        </View>
+
+          {/* Espécies do aquário */}
+          <Card>
+            <CabecalhoCard titulo="Espécies do Aquário" acao="Adicionar" onAcao={() => router.push("/especies")} />
+            {peixes.length === 0 ? (
+              <EstadoVazio icone="fish-outline" titulo="Nenhuma espécie adicionada" texto="Sem espécies, o diagnóstico não consegue avaliar a água." />
+            ) : (
+              peixes.map((peixe) => (
+                <View key={peixe.id} style={styles.linhaPeixe}>
+                  <View style={styles.iconePeixe}>
+                    <Ionicons name="fish" size={22} color={cores.primaria} />
+                  </View>
+                  <View style={styles.textosPeixe}>
+                    <Text style={styles.nomePeixe}>{peixe.animal?.nomePopular ?? `Espécie #${peixe.idAnimal}`}</Text>
+                    {peixe.animal && <Text style={styles.cientifico}>{peixe.animal.nomeCientifico}</Text>}
+                    <Text style={styles.quantidade}>Quantidade: {peixe.quantidade}</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </Card>
+
+          {/* Números */}
+          <View style={styles.grade}>
+            <View style={styles.estatistica}>
+              <View>
+                <Text style={styles.rotuloEstatistica}>Total de peixes</Text>
+                <Text style={styles.valorEstatistica}>{totalPeixes}</Text>
+              </View>
+              <View style={[styles.iconeEstatistica, { backgroundColor: "#cffafe" }]}>
+                <Ionicons name="fish" size={22} color={cores.primaria} />
+              </View>
+            </View>
+            <View style={styles.estatistica}>
+              <View>
+                <Text style={styles.rotuloEstatistica}>Espécies</Text>
+                <Text style={styles.valorEstatistica}>{peixes.length}</Text>
+              </View>
+              <View style={[styles.iconeEstatistica, { backgroundColor: "#dbeafe" }]}>
+                <Ionicons name="trending-up" size={22} color={cores.azul} />
+              </View>
+            </View>
+          </View>
+
+          {/* Atalhos */}
+          <View style={styles.grade}>
+            <Pressable style={styles.atalhoArea} onPress={() => router.push("/parametros")}>
+              <LinearGradient colors={gradientes.marca} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.atalho}>
+                <Ionicons name="water" size={26} color={cores.branco} />
+                <Text style={styles.textoAtalho}>Registrar Parâmetros</Text>
+              </LinearGradient>
+            </Pressable>
+            <Pressable style={styles.atalhoArea} onPress={() => router.push("/especies")}>
+              <LinearGradient colors={gradientes.acaoSecundaria} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.atalho}>
+                <Ionicons name="fish" size={26} color={cores.branco} />
+                <Text style={styles.textoAtalho}>Ver Catálogo de Espécies</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </>
       )}
-    </ScrollView>
+    </Tela>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
+  linhaPeixe: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 10,
+    borderRadius: raio.medio,
+    borderWidth: 1,
+    borderColor: cores.bordaClara,
+  },
+  iconePeixe: {
+    width: 48,
+    height: 48,
+    borderRadius: raio.pequeno,
+    backgroundColor: cores.primariaClara,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textosPeixe: {
     flex: 1,
   },
-  conteudo: {
+  nomePeixe: {
+    fontWeight: "bold",
+    color: cores.texto,
+  },
+  cientifico: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: cores.textoFraco,
+  },
+  quantidade: {
+    fontSize: 13,
+    color: cores.textoSecundario,
+    marginTop: 2,
+  },
+  grade: {
+    flexDirection: "row",
     gap: 12,
-    padding: 20,
   },
-  aviso: {
+  estatistica: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 16,
-  },
-  textoAviso: {
-    color: "#6b7280",
-    textAlign: "center",
-  },
-  peixes: {
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 16,
+    justifyContent: "space-between",
+    backgroundColor: cores.branco,
+    borderRadius: raio.medio,
     padding: 16,
-    gap: 6,
+    ...sombra,
   },
-  tituloPeixes: {
+  rotuloEstatistica: {
+    fontSize: 13,
+    color: cores.textoSecundario,
+  },
+  valorEstatistica: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: cores.texto,
+  },
+  iconeEstatistica: {
+    width: 44,
+    height: 44,
+    borderRadius: raio.pequeno,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  atalhoArea: {
+    flex: 1,
+  },
+  atalho: {
+    borderRadius: raio.medio,
+    padding: 16,
+    gap: 20,
+    minHeight: 110,
+  },
+  textoAtalho: {
+    color: cores.branco,
     fontWeight: "bold",
-    color: "#111827",
-  },
-  link: {
-    color: "#0891b2",
-    fontWeight: "bold",
-  },
-  erro: {
-    color: "#dc2626",
-    textAlign: "center",
+    fontSize: 15,
   },
 });

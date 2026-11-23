@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-native";
 import { NovoAquario, TipoAgua } from "@/types";
+import { BotaoGradiente } from "@/components/ui";
 
 type AquarioFormProps = {
     onSalvar: (novoAquario: NovoAquario) => Promise<void>;
@@ -74,13 +75,7 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
                 })}
             </View>
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
-            <Pressable
-                style={[styles.botaoAdicionar, salvando && styles.botaoDesabilitado]}
-                onPress={salvarAquario}
-                disabled={salvando}
-            >
-                <Text style={styles.textoBotaoAdicionar}>{salvando ? "Salvando..." : "Adicionar"}</Text>
-            </Pressable>
+            <BotaoGradiente texto={salvando ? "Salvando..." : "Criar aquário"} onPress={salvarAquario} carregando={salvando} />
         </View>
     );
 }
@@ -90,24 +85,11 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     campo: {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#f9fafb",
         borderWidth: 1,
         borderColor: "#e5e7eb",
         borderRadius: 12,
         padding: 12,
-    },
-    botaoAdicionar: {
-        backgroundColor: "#0891b2",
-        padding: 12,
-        borderRadius: 12,
-        alignItems: "center",
-    },
-    textoBotaoAdicionar: {
-        color: "#ffffff",
-        fontWeight: "bold",
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
     },
     erro: {
         color: "#dc2626",

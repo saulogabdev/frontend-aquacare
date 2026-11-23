@@ -1,18 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { RegistroParametro } from "@/types";
+import { cores, raio, sombra } from "@/theme";
+import { formatarDataHora } from "@/utils/formatar";
 
 type RegistroCardProps = {
     registro: RegistroParametro;
 };
-
-// "2026-11-18T14:32:10.123" -> "18/11/2026 14:32"
-// Formatado à mão (sem new Date) porque o backend manda a hora local sem fuso:
-// converter com Date poderia deslocar o horário dependendo do aparelho.
-function formatarDataHora(dataHora: string): string {
-    const [data, hora = ""] = dataHora.split("T");
-    const [ano, mes, dia] = data.split("-");
-    return `${dia}/${mes}/${ano} ${hora.slice(0, 5)}`;
-}
 
 // null (não medido) aparece como "—"
 function valor(numero: number | null, sufixo = ""): string {
@@ -20,23 +14,27 @@ function valor(numero: number | null, sufixo = ""): string {
 }
 
 export default function RegistroCard({ registro }: RegistroCardProps) {
-    // Lista de colunas: evita repetir o mesmo bloco de JSX cinco vezes.
+    // Cada parâmetro tem uma cor de identificação (como no protótipo). Não é a cor do alerta:
+    // pintar de verde/amarelo/vermelho depende do backend mandar o "parametro" em cada alerta.
     const colunas = [
-        { rotulo: "pH", valor: valor(registro.ph) },
-        { rotulo: "Temp", valor: valor(registro.temperatura, "°") },
-        { rotulo: "Amônia", valor: valor(registro.amonia) },
-        { rotulo: "NO₂", valor: valor(registro.nitrito) },
-        { rotulo: "NO₃", valor: valor(registro.nitrato) },
+        { rotulo: "pH", valor: valor(registro.ph), cor: "#0891b2", fundo: "#ecfeff" },
+        { rotulo: "Temp", valor: valor(registro.temperatura, "°"), cor: "#ea580c", fundo: "#fff7ed" },
+        { rotulo: "Amônia", valor: valor(registro.amonia), cor: "#dc2626", fundo: "#fef2f2" },
+        { rotulo: "NO₂", valor: valor(registro.nitrito), cor: "#db2777", fundo: "#fdf2f8" },
+        { rotulo: "NO₃", valor: valor(registro.nitrato), cor: "#7c3aed", fundo: "#faf5ff" },
     ];
 
     return (
         <View style={styles.cartao}>
-            <Text style={styles.data}>{formatarDataHora(registro.dataHora)}</Text>
+            <View style={styles.linhaData}>
+                <Ionicons name="calendar-outline" size={18} color={cores.textoFraco} />
+                <Text style={styles.data}>{formatarDataHora(registro.dataHora)}</Text>
+            </View>
             <View style={styles.colunas}>
                 {colunas.map((coluna) => (
-                    <View key={coluna.rotulo} style={styles.coluna}>
+                    <View key={coluna.rotulo} style={[styles.coluna, { backgroundColor: coluna.fundo }]}>
                         <Text style={styles.rotulo}>{coluna.rotulo}</Text>
-                        <Text style={styles.valor}>{coluna.valor}</Text>
+                        <Text style={[styles.valor, { color: coluna.cor }]}>{coluna.valor}</Text>
                     </View>
                 ))}
             </View>
@@ -46,34 +44,39 @@ export default function RegistroCard({ registro }: RegistroCardProps) {
 
 const styles = StyleSheet.create({
     cartao: {
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
+        backgroundColor: cores.branco,
+        borderRadius: raio.medio,
         padding: 16,
         gap: 12,
+        ...sombra,
+    },
+    linhaData: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
     },
     data: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#111827",
+        color: cores.texto,
     },
     colunas: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        gap: 6,
     },
     coluna: {
-        alignItems: "center",
         flex: 1,
+        alignItems: "center",
+        paddingVertical: 8,
+        borderRadius: raio.pequeno,
         gap: 2,
     },
     rotulo: {
-        fontSize: 12,
-        color: "#6b7280",
+        fontSize: 10,
+        color: cores.textoSecundario,
     },
     valor: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#0e7490",
+        fontSize: 15,
+        fontWeight: "800",
     },
 });

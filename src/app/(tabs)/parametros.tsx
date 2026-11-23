@@ -1,4 +1,7 @@
-import { ActivityIndicator, Text, StyleSheet, ScrollView, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, StyleSheet, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
+import { cores, raio } from "@/theme";
 import RegistroCard from "@/components/RegistroCard";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useRegistroContext } from "@/contexts/RegistroContext";
@@ -8,7 +11,7 @@ import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { listarRegistros } from "@/services/registroService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 export default function Parametros() {
     const {aquarios, idSelecionado} = useAquarioContext();
@@ -62,99 +65,145 @@ export default function Parametros() {
     const registrosOrdenados = [...registros].sort((a, b) => b.dataHora.localeCompare(a.dataHora));
 
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-            <Text>Monitorando: {aquarioSelecionado?.nome}</Text>
-            <RegistroForm onSalvar={salvarRegistro} />
+        <Tela>
+            <TituloTela
+                titulo="Parâmetros"
+                subtitulo={aquarioSelecionado ? `Qualidade da água · ${aquarioSelecionado.nome}` : "Selecione um aquário no Dashboard"}
+            />
 
-            {/* null = ainda não registrou nada: não mostra nada */}
+            {aquarioSelecionado && (
+                <Card>
+                    <View style={styles.cabecalho}>
+                        <Ionicons name="water" size={20} color={cores.primaria} />
+                        <Text style={styles.tituloCard}>Novo registro</Text>
+                    </View>
+                    <RegistroForm onSalvar={salvarRegistro} />
+                </Card>
+            )}
+
+            {/* Resultado do último registro: a resposta do POST (alertas da ÁGUA). O diagnóstico geral fica no Dashboard. */}
             {alertas !== null && alertas.length === 0 && (
-                <View style={[styles.cartao, styles.tudoCerto]}>
-                    <Text style={[styles.textoAlerta, styles.textoTudoCerto]}>
-                        Tudo certo! Nenhum parâmetro fora do ideal.
+                <View style={[styles.resultado, styles.tudoCerto]}>
+                    <Ionicons name="checkmark-circle" size={22} color="#15803d" />
+                    <Text style={[styles.textoResultado, styles.textoTudoCerto]}>
+                        Registro salvo. Nenhum parâmetro fora do ideal.
                     </Text>
                 </View>
             )}
 
             {alertas !== null && alertas.length > 0 && (
-                <View style={styles.listaAlertas}>
-                    <Text style={styles.tituloAlertas}>Alertas do último registro</Text>
+                <Card>
+                    <View style={styles.cabecalho}>
+                        <Ionicons name="warning" size={20} color="#b45309" />
+                        <Text style={styles.tituloCard}>Alertas do último registro</Text>
+                    </View>
                     {alertas.map((alerta, indice) => {
                         const critico = alerta.severidade === "CRITICO";
                         return (
-                            <View key={indice} style={[styles.cartao, critico ? styles.critico : styles.atencao]}>
+                            <View key={indice} style={[styles.alerta, critico ? styles.critico : styles.atencao]}>
                                 <Text style={[styles.rotulo, critico ? styles.textoCritico : styles.textoAtencao]}>
                                     {critico ? "Crítico" : "Atenção"}
                                 </Text>
-                                <Text style={[styles.textoAlerta, critico ? styles.textoCritico : styles.textoAtencao]}>
+                                <Text style={[styles.textoResultado, critico ? styles.textoCritico : styles.textoAtencao]}>
                                     {alerta.mensagem}
                                 </Text>
                             </View>
                         );
                     })}
-                </View>
+                    <Pressable onPress={() => router.push("/")}>
+                        <Text style={styles.link}>Ver diagnóstico do aquário →</Text>
+                    </Pressable>
+                </Card>
             )}
 
-            <Text style={styles.tituloAlertas}>Registros</Text>
-            {carregandoRegistros && <ActivityIndicator color="#0891b2" />}
-            {erroRegistros !== "" && <Text style={styles.textoCritico}>{erroRegistros}</Text>}
-            {!carregandoRegistros && erroRegistros === "" && registrosOrdenados.length === 0 && (
-                <Text style={styles.semRegistros}>Nenhum registro ainda. Faça a primeira medição acima.</Text>
+            {aquarioSelecionado && (
+                <View style={styles.secao}>
+                    <Text style={styles.tituloSecao}>Registros Diários</Text>
+                    <Text style={styles.contador}>{registrosOrdenados.length} registros</Text>
+                </View>
+            )}
+            {carregandoRegistros && registrosOrdenados.length === 0 && <ActivityIndicator color={cores.primaria} />}
+            <MensagemErro texto={erroRegistros} />
+            {aquarioSelecionado && !carregandoRegistros && erroRegistros === "" && registrosOrdenados.length === 0 && (
+                <Card>
+                    <EstadoVazio icone="calendar-outline" titulo="Nenhum registro ainda" texto="Faça a primeira medição no formulário acima." />
+                </Card>
             )}
             {registrosOrdenados.map((registro) => (
                 <RegistroCard key={registro.idParametro} registro={registro} />
             ))}
-        </ScrollView>
+        </Tela>
     )
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-  },
-  semRegistros: {
-    color: "#6b7280",
-  },
-  conteudo: {
-    gap: 12,
-    padding: 20,
-  },
-  listaAlertas: {
-    gap: 8,
-  },
-  tituloAlertas: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  cartao: {
-    padding: 12,
-    borderRadius: 12,
-    gap: 4,
-  },
-  critico: {
-    backgroundColor: "#fee2e2",
-  },
-  atencao: {
-    backgroundColor: "#fef3c7",
-  },
-  tudoCerto: {
-    backgroundColor: "#dcfce7",
-  },
-  rotulo: {
-    fontSize: 12,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-  },
-  textoAlerta: {
-    fontSize: 14,
-  },
-  textoCritico: {
-    color: "#b91c1c",
-  },
-  textoAtencao: {
-    color: "#b45309",
-  },
-  textoTudoCerto: {
-    color: "#15803d",
-    fontWeight: "bold",
-  },
+    cabecalho: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    tituloCard: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: cores.texto,
+    },
+    resultado: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        padding: 14,
+        borderRadius: raio.medio,
+    },
+    alerta: {
+        padding: 12,
+        borderRadius: raio.pequeno,
+        gap: 4,
+    },
+    critico: {
+        backgroundColor: "#fee2e2",
+    },
+    atencao: {
+        backgroundColor: "#fef3c7",
+    },
+    tudoCerto: {
+        backgroundColor: "#dcfce7",
+    },
+    rotulo: {
+        fontSize: 12,
+        fontWeight: "bold",
+        textTransform: "uppercase",
+    },
+    textoResultado: {
+        flex: 1,
+        fontSize: 14,
+    },
+    textoCritico: {
+        color: "#b91c1c",
+    },
+    textoAtencao: {
+        color: "#b45309",
+    },
+    textoTudoCerto: {
+        color: "#15803d",
+        fontWeight: "bold",
+    },
+    link: {
+        color: cores.primaria,
+        fontWeight: "bold",
+    },
+    secao: {
+        flexDirection: "row",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        marginBottom: -4,
+    },
+    tituloSecao: {
+        fontSize: 20,
+        fontWeight: "800",
+        color: cores.texto,
+    },
+    contador: {
+        color: cores.textoFraco,
+        fontSize: 13,
+    },
 });

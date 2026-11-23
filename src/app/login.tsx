@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Logo } from "@/components/Cabecalho";
+import { BotaoGradiente } from "@/components/ui";
+import { cores, gradientes, raio, sombra } from "@/theme";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Link } from "expo-router";
 
@@ -26,58 +30,65 @@ export default function Login() {
     }
     
     return (
+        <LinearGradient colors={gradientes.fundo} style={styles.fundo}>
         <View style={styles.container}>
-            <Text style={styles.titulo}>Aquacare</Text>
+            <View style={styles.marca}>
+                <Logo tamanho={64} />
+                <Text style={styles.titulo}>AquaCare</Text>
+                <Text style={styles.subtitulo}>Monitoramento inteligente do seu aquário</Text>
+            </View>
             {aviso !== "" && erro === "" && <Text style={styles.aviso}>{aviso}</Text>}
             <TextInput style={styles.campo} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
             <TextInput style={styles.campo} placeholder="Senha" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
-            <Pressable style={styles.botao} onPress={() => fazerLogin()} disabled={carregando}>
-                <Text style={styles.textoBotao}>{carregando ? "Entrando..." : "Entrar"}</Text>
-            </Pressable>
+            <BotaoGradiente texto={carregando ? "Entrando..." : "Entrar"} onPress={() => fazerLogin()} carregando={carregando} />
             <Link href="/cadastro" replace style={styles.link}>
                 Não tem conta? Criar conta
             </Link>
         </View>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    titulo: {
-        fontWeight: "bold",
-        fontSize: 24,
-        color: "#111827",
-        textAlign: "center",
+    fundo: {
+        flex: 1,
     },
     container: {
         gap: 12,
         flex: 1,
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
+    },
+    marca: {
+        alignItems: "center",
+        gap: 6,
+        marginBottom: 16,
+    },
+    titulo: {
+        fontWeight: "800",
+        fontSize: 30,
+        color: cores.primaria,
+        marginTop: 8,
+    },
+    subtitulo: {
+        color: cores.textoSecundario,
+        textAlign: "center",
     },
     campo: {
-        backgroundColor: "#ffffff",
+        backgroundColor: cores.branco,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 12,
-        padding: 12,
-    },
-    botao: {
-        backgroundColor: "#0891b2",
-        padding: 12,
-        borderRadius: 12,
-        alignItems: "center",
-    },
-    textoBotao: {
-        color: "#ffffff",
-        fontWeight: "bold",
+        borderColor: cores.borda,
+        borderRadius: raio.pequeno,
+        padding: 14,
+        ...sombra,
     },
     erro: {
-        color: "#dc2626",
+        color: cores.perigo,
         textAlign: "center",
     },
     link: {
-        color: "#0891b2",
+        color: cores.primaria,
         fontWeight: "bold",
         textAlign: "center",
         marginTop: 4,
@@ -86,7 +97,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fef3c7",
         color: "#b45309",
         padding: 12,
-        borderRadius: 12,
+        borderRadius: raio.pequeno,
         textAlign: "center",
         overflow: "hidden",
     },

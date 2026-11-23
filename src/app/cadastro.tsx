@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link } from "expo-router";
-import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
+import { Keyboard, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Logo } from "@/components/Cabecalho";
+import { BotaoGradiente } from "@/components/ui";
+import { cores, gradientes, raio, sombra } from "@/theme";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cadastrarUsuario } from "@/services/usuarioService";
 
@@ -56,9 +60,13 @@ export default function Cadastro() {
     }
 
     return (
+        <LinearGradient colors={gradientes.fundo} style={styles.fundo}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-            <Text style={styles.titulo}>Criar conta</Text>
-            <Text style={styles.subtitulo}>Cadastre-se para monitorar seus aquários.</Text>
+            <View style={styles.marca}>
+                <Logo tamanho={56} />
+                <Text style={styles.titulo}>Criar conta</Text>
+                <Text style={styles.subtitulo}>Cadastre-se para monitorar seus aquários.</Text>
+            </View>
 
             <TextInput style={styles.campo} placeholder="Nome" value={nome} onChangeText={setNome} />
             <TextInput style={styles.campo} placeholder="E-mail" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
@@ -67,61 +75,55 @@ export default function Cadastro() {
 
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
-            <Pressable style={[styles.botao, carregando && styles.botaoDesabilitado]} onPress={criarConta} disabled={carregando}>
-                <Text style={styles.textoBotao}>{carregando ? "Criando conta..." : "Criar conta"}</Text>
-            </Pressable>
+            <BotaoGradiente texto={carregando ? "Criando conta..." : "Criar conta"} onPress={criarConta} carregando={carregando} />
 
             <Link href="/login" replace style={styles.link}>
                 Já tenho conta. Entrar
             </Link>
         </ScrollView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    fundo: {
+        flex: 1,
+    },
     container: {
         flexGrow: 1,
         gap: 12,
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
+    },
+    marca: {
+        alignItems: "center",
+        gap: 6,
+        marginBottom: 12,
     },
     titulo: {
-        fontWeight: "bold",
-        fontSize: 24,
-        color: "#111827",
-        textAlign: "center",
+        fontWeight: "800",
+        fontSize: 26,
+        color: cores.texto,
+        marginTop: 8,
     },
     subtitulo: {
-        color: "#6b7280",
+        color: cores.textoSecundario,
         textAlign: "center",
-        marginBottom: 8,
     },
     campo: {
-        backgroundColor: "#ffffff",
+        backgroundColor: cores.branco,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 12,
-        padding: 12,
-    },
-    botao: {
-        backgroundColor: "#0891b2",
-        padding: 12,
-        borderRadius: 12,
-        alignItems: "center",
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
-    },
-    textoBotao: {
-        color: "#ffffff",
-        fontWeight: "bold",
+        borderColor: cores.borda,
+        borderRadius: raio.pequeno,
+        padding: 14,
+        ...sombra,
     },
     erro: {
-        color: "#dc2626",
+        color: cores.perigo,
         textAlign: "center",
     },
     link: {
-        color: "#0891b2",
+        color: cores.primaria,
         fontWeight: "bold",
         textAlign: "center",
         marginTop: 4,
