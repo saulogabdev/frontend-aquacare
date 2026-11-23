@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { Link } from "expo-router";
 
 export default function Login() {
     const { entrar, aviso } = useAuthContext();
@@ -34,6 +35,9 @@ export default function Login() {
             <Pressable style={styles.botao} onPress={() => fazerLogin()} disabled={carregando}>
                 <Text style={styles.textoBotao}>{carregando ? "Entrando..." : "Entrar"}</Text>
             </Pressable>
+            <Link href="/cadastro" replace style={styles.link}>
+                Não tem conta? Criar conta
+            </Link>
         </View>
     );
 }
@@ -71,6 +75,12 @@ const styles = StyleSheet.create({
     erro: {
         color: "#dc2626",
         textAlign: "center",
+    },
+    link: {
+        color: "#0891b2",
+        fontWeight: "bold",
+        textAlign: "center",
+        marginTop: 4,
     },
     aviso: {
         backgroundColor: "#fef3c7",

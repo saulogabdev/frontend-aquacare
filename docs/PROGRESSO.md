@@ -469,7 +469,7 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    usuário logado. Qualquer usuário logado vê, edita e apaga os aquários dos outros.
 2. Sem token, ou com token inválido/expirado, a resposta é **403 sem corpo**, e não 401. Token inválido gera
    exceção dentro do `JwtAuthFilter`. (O app vai tratar 401 e 403 como "voltar para o login".)
-3. Não existe `GET /usuarios/me`: o app não consegue saber o nome do usuário logado (aba Perfil).
+3. ✅ (resolvido, visto em 20/11) `GET /usuarios/me` já existe → usar no Perfil (nome) e para saber a `role` (admin).
 4. Nome diferente entre request (`nivelPlanta`) e response (`nivelPlantas`) do aquário.
 5. Regra: aquário sem plantas (o enum não tem "nenhum") e equipamento `OUTRO`.
 6. Documentação: `springdoc.use-fqn=true` para resolver a colisão dos `DadosRequest` no Swagger.
@@ -602,6 +602,16 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - 🐞 Bug corrigido: faltava `idSelecionado` nas dependências do `useCallback` → closure desatualizada (a função
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
+
+**Item 6 (20/11/2026): cadastro de usuário — código pronto (Claude), FALTA o Saulo revisar e testar.**
+- `usuarioService.cadastrarUsuario(nome, email, senha)` → `POST /usuarios/cadastrar` (201; e-mail repetido = 400
+  "E-mail já cadastrado.", mensagem mostrada direto).
+- `app/cadastro.tsx` (fora das abas, no mesmo `Stack.Protected guard={token === null}` do login): nome, e-mail,
+  senha, confirmação. Validação no app antes da API (campos vazios, formato do e-mail, senha ≥ 6, senhas iguais)
+  — mensagem clara na hora; a validação de verdade continua no backend. Ao criar, **já entra** (`entrar()`):
+  com o token salvo, o `Stack.Protected` remove a tela e mostra as abas.
+- Links com `replace` entre login ↔ cadastro (não empilha telas). Obs.: senha mínima de 6 é só do app (o
+  backend só exige `@NotBlank`) — se quiserem a regra de verdade, pedir ao Brayan.
 
 **Item 4 (20/11/2026): histórico de registros — Saulo fez com aula (passos 1–4), Claude fez o `RegistroCard`.**
 - `registroService.listarRegistros(token, idAquario)` → `GET /registro/aquario/{id}` (vem SEM ordenação).

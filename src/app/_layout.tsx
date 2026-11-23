@@ -18,6 +18,7 @@ function NavegacaoRaiz() {
       </Stack.Protected>
       <Stack.Protected guard={token === null}>
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="cadastro" options={{ headerShown: false }} />
       </Stack.Protected>
     </Stack>
   )
