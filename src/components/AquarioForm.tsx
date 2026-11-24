@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View, TextInput, Pressable, Text, StyleSheet, Keyboard } from "react-native";
+import { cores } from "@/theme";
 import { NovoAquario, TipoAgua } from "@/types";
 import { BotaoGradiente } from "@/components/ui";
 
@@ -56,8 +57,8 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
 
     return (
         <View style={styles.container}>
-            <TextInput style={styles.campo} placeholder="Nome do aquário" value={nome} onChangeText={setNome} />
-            <TextInput style={styles.campo} placeholder="Litragem" value={litragem} onChangeText={setLitragem} keyboardType="numeric" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Nome do aquário" value={nome} onChangeText={setNome} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Litragem" value={litragem} onChangeText={setLitragem} keyboardType="numeric" />
             <View style={styles.opcoes}>
                 {opcoesTipoAgua.map((opcao) => {
                     const selecionada = opcao.valor === tipoAgua;
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     campo: {
+        color: cores.texto,
         backgroundColor: "#f9fafb",
         borderWidth: 1,
         borderColor: "#e5e7eb",

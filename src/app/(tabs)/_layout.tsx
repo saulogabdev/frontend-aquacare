@@ -1,5 +1,4 @@
 import { Tabs } from "expo-router";
-import { ColorValue } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Cabecalho from "@/components/Cabecalho";
 import { cores } from "@/theme";
@@ -8,8 +7,8 @@ type NomeIcone = keyof typeof Ionicons.glyphMap;
 
 // Ícone de cada aba: cheio quando a aba está ativa, contorno quando não está.
 function icone(cheio: NomeIcone, contorno: NomeIcone) {
-    function IconeAba({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) {
-        return <Ionicons name={focused ? cheio : contorno} size={size} color={color} />;
+    function IconeAba({ size, focused }: { size: number; focused: boolean }) {
+        return <Ionicons name={focused ? cheio : contorno} size={size} color={focused ? cores.primaria : cores.textoFraco} />;
     }
     return IconeAba;
 }

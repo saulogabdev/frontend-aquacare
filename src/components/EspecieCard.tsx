@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Keyboard } from "react-native";
 import { Agressividade, Animal, RegiaoNado } from "@/types";
-import { sombra } from "@/theme";
+import { cores, sombra } from "@/theme";
 
 type EspecieCardProps = {
     animal: Animal;
@@ -81,7 +81,7 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
 
             {onAdicionar && aberto && (
                 <View style={styles.formulario}>
-                    <TextInput
+                    <TextInput placeholderTextColor={cores.textoFraco}
                         style={styles.campo}
                         placeholder="Quantidade"
                         value={quantidade}
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
         marginTop: 6,
     },
     campo: {
+        color: cores.texto,
         flex: 1,
         backgroundColor: "#ffffff",
         borderWidth: 1,

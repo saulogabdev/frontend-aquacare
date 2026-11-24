@@ -68,10 +68,10 @@ export default function Cadastro() {
                 <Text style={styles.subtitulo}>Cadastre-se para monitorar seus aquários.</Text>
             </View>
 
-            <TextInput style={styles.campo} placeholder="Nome" value={nome} onChangeText={setNome} />
-            <TextInput style={styles.campo} placeholder="E-mail" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-            <TextInput style={styles.campo} placeholder="Senha (mínimo 6 caracteres)" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
-            <TextInput style={styles.campo} placeholder="Confirmar senha" secureTextEntry autoCapitalize="none" value={confirmacao} onChangeText={setConfirmacao} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Nome" value={nome} onChangeText={setNome} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="E-mail" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Senha (mínimo 6 caracteres)" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Confirmar senha" secureTextEntry autoCapitalize="none" value={confirmacao} onChangeText={setConfirmacao} />
 
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     campo: {
+        color: cores.texto,
         backgroundColor: cores.branco,
         borderWidth: 1,
         borderColor: cores.borda,

@@ -65,7 +65,7 @@ export default function Especies() {
             {/* Catálogo */}
             <View style={styles.busca}>
                 <Ionicons name="search" size={18} color={cores.textoFraco} />
-                <TextInput
+                <TextInput placeholderTextColor={cores.textoFraco}
                 style={styles.campoBusca}
                 placeholder="Buscar espécie..."
                 value={busca}
@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
     },
     campoBusca: {
+        color: cores.texto,
         flex: 1,
         paddingVertical: 12,
     },

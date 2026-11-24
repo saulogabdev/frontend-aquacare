@@ -8,7 +8,7 @@ import { cores, gradientes, raio, sombra } from "@/theme";
 import AquarioCard from "@/components/AquarioCard";
 import AquarioForm from "@/components/AquarioForm";
 import { useAquarioContext,  } from "@/contexts/AquarioContext";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Diagnostico, NovoAquario } from "@/types";
@@ -18,6 +18,8 @@ import DiagnosticoCard from "@/components/DiagnosticoCard";
 import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
 
 export default function Index() {
+    // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
+    const router = useRouter();
   const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando } = useAquarioContext();
   const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
   const listaVazia = !carregando && erro === "" && aquarios.length === 0;

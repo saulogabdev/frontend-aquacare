@@ -11,9 +11,11 @@ import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { listarRegistros } from "@/services/registroService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 export default function Parametros() {
+    // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
+    const router = useRouter();
     const {aquarios, idSelecionado} = useAquarioContext();
     const {token, sair} = useAuthContext();
     const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);

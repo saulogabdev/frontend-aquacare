@@ -1,4 +1,5 @@
 import { View, TextInput, Text, StyleSheet, Keyboard } from "react-native";
+import { cores } from "@/theme";
 import { useState } from "react";
 import { NovoRegistroParametro } from "@/types";
 import { BotaoGradiente } from "@/components/ui";
@@ -79,11 +80,11 @@ export default function RegistroForm({ onSalvar }: RegistroFormProps) {
 
     return (
         <View style={styles.container}>
-            <TextInput style={styles.campo} placeholder="pH" value={ph} onChangeText={setPh} keyboardType="decimal-pad" />
-            <TextInput style={styles.campo} placeholder="Temperatura (°C)" value={temperatura} onChangeText={setTemperatura} keyboardType="decimal-pad" />
-            <TextInput style={styles.campo} placeholder="Amônia (ppm)" value={amonia} onChangeText={setAmonia} keyboardType="decimal-pad" />
-            <TextInput style={styles.campo} placeholder="Nitrito (ppm) — opcional" value={nitrito} onChangeText={setNitrito} keyboardType="decimal-pad" />
-            <TextInput style={styles.campo} placeholder="Nitrato (ppm) — opcional" value={nitrato} onChangeText={setNitrato} keyboardType="decimal-pad" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="pH" value={ph} onChangeText={setPh} keyboardType="decimal-pad" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Temperatura (°C)" value={temperatura} onChangeText={setTemperatura} keyboardType="decimal-pad" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Amônia (ppm)" value={amonia} onChangeText={setAmonia} keyboardType="decimal-pad" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Nitrito (ppm) — opcional" value={nitrito} onChangeText={setNitrito} keyboardType="decimal-pad" />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Nitrato (ppm) — opcional" value={nitrato} onChangeText={setNitrato} keyboardType="decimal-pad" />
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
             <BotaoGradiente texto={salvando ? "Salvando..." : "Salvar registro"} onPress={salvarRegistro} carregando={salvando} icone="checkmark" />
         </View>
@@ -95,6 +96,7 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     campo: {
+        color: cores.texto,
         backgroundColor: "#f9fafb",
         borderWidth: 1,
         borderColor: "#e5e7eb",

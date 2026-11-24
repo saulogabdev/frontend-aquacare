@@ -607,6 +607,18 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
 
+**Atualização para o SDK 58 (24/11/2026), branch `atualiza-sdk-58` — ✅ testado no iPhone pelo Saulo.**
+- Motivo: o Expo Go do iPhone atualizou para o SDK 58 (cada Expo Go roda um SDK só; no iPhone não dá para
+  instalar versão antiga). A banca também vai usar o Expo Go 58.
+- Comandos (guia oficial): `npm install expo@^58.0.0`, `npx expo install --fix`; o npm travou por conflito com o
+  `package-lock.json` antigo → apagar `node_modules` e `package-lock.json` e `npm install` de novo. `npx expo-doctor`:
+  20/20 ok. Agora: React Native 0.88, React 19.3, expo-router 58.
+- Ajustes no código: (1) tipos mais rígidos do RN 0.88 → ícone das abas usa as cores do tema em vez do `color`;
+  (2) recomendado no SDK 58: `useRouter()` em vez de importar o `router` direto (Dashboard e Parâmetros).
+- Pontos a testar (mudaram por dentro no expo-router 58): login/logout (`Stack.Protected`), links login↔cadastro,
+  troca de abas e atalhos do Dashboard.
+- **Em outro computador:** depois do `git pull`, rodar `npm install` (as versões mudaram).
+
 **Item 5 (23/11/2026): visual do protótipo — feito pelo Claude, FALTA o Saulo revisar e testar no celular.**
 - Novas libs (via `npx expo install`, já vêm no Expo Go): `expo-linear-gradient` (degradês) e `@expo/vector-icons`
   (ícones Ionicons).

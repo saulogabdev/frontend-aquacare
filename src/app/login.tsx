@@ -38,8 +38,8 @@ export default function Login() {
                 <Text style={styles.subtitulo}>Monitoramento inteligente do seu aquário</Text>
             </View>
             {aviso !== "" && erro === "" && <Text style={styles.aviso}>{aviso}</Text>}
-            <TextInput style={styles.campo} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-            <TextInput style={styles.campo} placeholder="Senha" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+            <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Senha" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
             <BotaoGradiente texto={carregando ? "Entrando..." : "Entrar"} onPress={() => fazerLogin()} carregando={carregando} />
             <Link href="/cadastro" replace style={styles.link}>
@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     campo: {
+        color: cores.texto,
         backgroundColor: cores.branco,
         borderWidth: 1,
         borderColor: cores.borda,
