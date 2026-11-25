@@ -17,6 +17,8 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
     const [nome, setNome] = useState("");
     const [litragem, setLitragem] = useState("");
     const [tipoAgua, setTipoAgua] = useState<TipoAgua>("DOCE");
+    // Para aquários que já existiam antes do app (montados há tempo): não entram em ciclagem.
+    const [isCiclado, setIsCiclado] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
 
@@ -36,7 +38,7 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
             litragem: litros,
             tipoAgua: tipoAgua,
             nivelPlanta: "BAIXA",
-            isCiclado: false,
+            isCiclado: isCiclado,
             injecaoCO2: false,
         };
 
@@ -46,6 +48,7 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
             setNome("");
             setLitragem("");
             setTipoAgua("DOCE");
+            setIsCiclado(false);
         } catch (e) {
             if (e instanceof Error) {
                 setErro(e.message);
@@ -75,6 +78,15 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
                     );
                 })}
             </View>
+            {/* Liga/desliga: mesmo visual dos botões Doce/Marinho */}
+            <Pressable
+                style={[styles.opcao, isCiclado && styles.opcaoSelecionada]}
+                onPress={() => setIsCiclado(!isCiclado)}
+            >
+                <Text style={[styles.textoOpcao, isCiclado && styles.textoOpcaoSelecionada]}>
+                    {isCiclado ? "✓ Já está ciclado" : "Já está ciclado? (aquário montado há mais tempo)"}
+                </Text>
+            </Pressable>
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
             <BotaoGradiente texto={salvando ? "Salvando..." : "Criar aquário"} onPress={salvarAquario} carregando={salvando} />
         </View>

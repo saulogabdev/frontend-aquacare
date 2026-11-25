@@ -20,20 +20,33 @@ import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
 export default function Index() {
     // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
     const router = useRouter();
-  const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando } = useAquarioContext();
+  const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando, editarAquario } = useAquarioContext();
   const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
   const listaVazia = !carregando && erro === "" && aquarios.length === 0;
   const [diagnostico, setDiagnostico] = useState<Diagnostico | null>(null);
   const [carregandoDiagnostico, setCarregandoDiagnostico] = useState<boolean>(false);
   const [erroDiagnostico, setErroDiagnostico] = useState("");
   const { token, sair } = useAuthContext();
-  const { peixes } = usePeixesDoAquario();
+  const { peixes, remover } = usePeixesDoAquario();
+  const [erroRemover, setErroRemover] = useState("");
   // O formulário de novo aquário só aparece ao tocar em "+ Novo" (como no protótipo).
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   // Soma das quantidades de todas as espécies (valor calculado).
   const totalPeixes = peixes.reduce((soma, peixe) => soma + peixe.quantidade, 0);
 
   // Cria o aquário e fecha o formulário. Se der erro, o formulário continua aberto mostrando a mensagem.
+  // Remove a espécie do aquário (mesmo "remover" da aba Espécies, vindo do hook). O erro aparece no card.
+  async function removerPeixe(idAssociacao: number) {
+    setErroRemover("");
+    try {
+      await remover(idAssociacao);
+    } catch (error) {
+      if (error instanceof Error) {
+        setErroRemover(error.message);
+      }
+    }
+  }
+
   async function criarAquario(novo: NovoAquario) {
     await adicionarAquario(novo);
     setMostrarFormulario(false);
@@ -64,6 +77,18 @@ export default function Index() {
     }, [token, sair, idSelecionado])
   );
 
+  async function encerrarCiclagem() {
+    if (!aquarioSelecionado) return;
+    await editarAquario(aquarioSelecionado.id, {
+        nome: aquarioSelecionado.nome,
+        litragem: aquarioSelecionado.litragem,
+        tipoAgua: aquarioSelecionado.tipoAgua,
+        nivelPlanta: aquarioSelecionado.nivelPlantas,  
+        injecaoCO2: aquarioSelecionado.injecaoCO2,
+        isCiclado: true,                                  
+    });
+}
+
   return (
     <Tela>
       <TituloTela titulo="Dashboard" subtitulo="Visão geral do seu aquário" />
@@ -89,7 +114,7 @@ export default function Index() {
 
       {aquarioSelecionado && (
         <>
-          <BannerAquario aquario={aquarioSelecionado} />
+          <BannerAquario aquario={aquarioSelecionado} onEncerrarCiclagem={encerrarCiclagem} />
 
           {/* Diagnóstico (SAD): estado geral + alertas */}
           {carregandoDiagnostico && !diagnostico && <ActivityIndicator color={cores.primaria} />}
@@ -120,9 +145,13 @@ export default function Index() {
                     {peixe.animal && <Text style={styles.cientifico}>{peixe.animal.nomeCientifico}</Text>}
                     <Text style={styles.quantidade}>Quantidade: {peixe.quantidade}</Text>
                   </View>
+                  <Pressable onPress={() => removerPeixe(peixe.id)} style={styles.botaoRemover} accessibilityLabel="Remover espécie">
+                    <Ionicons name="trash-outline" size={18} color={cores.perigo} />
+                  </Pressable>
                 </View>
               ))
             )}
+            <MensagemErro texto={erroRemover} />
           </Card>
 
           {/* Números */}
@@ -183,6 +212,13 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: raio.pequeno,
     backgroundColor: cores.primariaClara,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  botaoRemover: {
+    width: 36,
+    height: 36,
+    borderRadius: raio.pilula,
     alignItems: "center",
     justifyContent: "center",
   },

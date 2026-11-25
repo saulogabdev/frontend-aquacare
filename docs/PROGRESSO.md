@@ -485,6 +485,17 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
    remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
    No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+16. **Excluir aquário com dados dá 500 (25/11):** `RegistroParametro`, `AnimalAquario` e `Lembrete` apontam para o
+    `Aquario` sem cascata → `DELETE /aquarios/{id}` de um aquário com registros/peixes viola a FK (erro 500 sem
+    tratamento). Sugestão: `@OneToMany(mappedBy = "aquario", cascade = CascadeType.REMOVE)` no `Aquario` (ou
+    apagar os filhos no `AquarioService.excluir`). Hoje só aquário vazio pode ser excluído.
+15. **Ciclagem (25/11, ideia do Saulo).** Hoje o backend só guarda `isCiclado` e `dataMontagem` (nenhuma regra).
+    Regra: em ciclagem = `!isCiclado && dias desde a montagem < 30`; o usuário pode encerrar antes (acelerador
+    biológico) via `PUT /aquarios/{id}` com `isCiclado = true` (rota já existe e confere o dono). Backend:
+    alerta ATENCAO no diagnóstico ("dia X de 30: evite adicionar peixes; amônia/nitrito altos são esperados") e
+    alerta (não bloqueio) ao associar animal; idealmente devolver `emCiclagem` e `diasMontagem` no AquarioResponse.
+    App (junto com o item 11, editar/excluir): etiqueta "Em ciclagem · dia X de 30" + botão "Encerrar ciclagem" no
+    banner; opção "Já está ciclado" no formulário de novo aquário; aviso na aba Espécies.
 14. **Compatibilidade deve ALERTAR, não bloquear (19/11, ideia do Saulo).** Hoje `associar` lança 400 e impede.
     Mas o artigo (2.4) diz "emitindo alertas quando combinações inadequadas são identificadas", e um SAD
     apoia, não decide. Bloquear impede cadastrar o aquário REAL (o peixe já está lá) e deixa justamente o
@@ -531,6 +542,9 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 5. Arrumar a pasta do backend: trocar o ZIP de `~/Downloads` por um `git clone` (para receber `git pull`).
 
 ## Plano final (13/11/2026 → 27/11/2026, entrega confirmada em 23/11)
+
+**Prazos (atualizado em 25/11):** o **ARTIGO** é entregue até **27/11**. O **app** pode continuar evoluindo até
+**08/12**, desde que não fuja do que o artigo descreve (nada grande que não esteja no texto).
 
 **Reta final (23/11):** 23–24 = item 5 (visual do protótipo) + Perfil com `GET /usuarios/me` (Claude);
 25 = gráfico (item 9); 26–27 = testes no celular, prints, ensaio (Saulo). Trabalhos futuros: lembretes,
@@ -607,6 +621,26 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
 
+**Item 11 Parte A (25/11/2026): ciclagem — código pronto, FALTA TESTAR.** Saulo: service `atualizarAquario` (PUT),
+`editarAquario` no Context, `utils/ciclagem.ts` (`CICLAGEM_DIAS = 30`, `diasDesde` montando o `Date` à mão — meses
+começam em 0 — e `emCiclagem = !isCiclado && dias < 30`), etiqueta no banner e `encerrarCiclagem` no Dashboard
+(PUT com todos os campos; `nivelPlantas` da resposta → `nivelPlanta` no envio). Claude: "Já está ciclado" no
+`AquarioForm`, `ModalEncerrarCiclagem` (explica a ciclagem e o acelerador biológico; `<Modal>` e não `Alert`, que não
+tem botões na web), botão no banner e aviso amarelo na aba Espécies. SAD: informa as consequências, não impede.
+Parte B (pendente): editar o aquário completo + excluir (excluir com dados dá 500 → item 16 do Brayan).
+Os botões Editar/Excluir já aparecem no `AquarioCard` (props opcionais `onEditar`/`onExcluir`; sem elas, mostram
+"disponíveis em breve"). Na Parte B é só passar as funções pelo Dashboard.
+
+**Item 9 (25/11/2026): gráfico da evolução — ✅ Saulo fez a parte nova; Claude fez a moldura.**
+- `react-native-svg` (via `npx expo install`, vem no Expo Go). Gráfico desenhado à mão em SVG (como o protótipo),
+  sem biblioteca de gráficos: sem risco de incompatibilidade e cada linha é explicável.
+- `components/GraficoParametros.tsx`, na tela de Parâmetros acima dos "Registros Diários". Botões pH/Temp/Amônia/
+  NO₂/NO₃ (`useState` da chave). Mesma lista do histórico → registro novo aparece no gráfico na hora.
+- Saulo: pontos (`filter` dos não-nulos → `map` para `{dataHora, valor}` com `r[chave]` → `sort` crescente);
+  escala (mínimo/máximo com 20% de folga, `|| 0.5` se todos iguais; `x(i)` espaçamento igual; `y(v)` com
+  `1 − proporção` porque **no SVG o y cresce para baixo**); caminho `"M x y L x y ..."`.
+- `onLayout`: a largura do card em pixels só existe depois que ele aparece na tela.
+
 **Atualização para o SDK 58 (24/11/2026), branch `atualiza-sdk-58` — ✅ testado no iPhone pelo Saulo.**
 - Motivo: o Expo Go do iPhone atualizou para o SDK 58 (cada Expo Go roda um SDK só; no iPhone não dá para
   instalar versão antiga). A banca também vai usar o Expo Go 58.
@@ -618,6 +652,9 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - Pontos a testar (mudaram por dentro no expo-router 58): login/logout (`Stack.Protected`), links login↔cadastro,
   troca de abas e atalhos do Dashboard.
 - **Em outro computador:** depois do `git pull`, rodar `npm install` (as versões mudaram).
+- Corrigido no iPhone (modo escuro deixava o placeholder invisível): `app.json` `userInterfaceStyle: "light"`
+  (o app só tem tema claro) + `placeholderTextColor` e `color` explícitos nos 15 campos. Tema escuro = trabalho futuro.
+- Juntado na `main` (commit `2285dc1`).
 
 **Item 5 (23/11/2026): visual do protótipo — feito pelo Claude, FALTA o Saulo revisar e testar no celular.**
 - Novas libs (via `npx expo install`, já vêm no Expo Go): `expo-linear-gradient` (degradês) e `@expo/vector-icons`
@@ -703,7 +740,7 @@ Motivo de adiantar: sem espécie associada o SAD não analisa nada (antes só da
 | --- | --- | --- | --- |
 | 7 | Enciclopédia: lista de animais e plantas, busca por nome, tela de detalhe (`especie/[id]`) | C | `/animal/...`, `/planta/...` |
 | 8 | ✅ Associar espécies ao aquário e listar as espécies do aquário | C | `/animal-aquario/...`, `/planta-aquario/...` |
-| 9 | Gráficos da variação de cada parâmetro (biblioteca a escolher, compatível com o Expo Go) | C | `GET /registro/aquario/{id}` |
+| 9 | ✅ Gráficos da variação de cada parâmetro (biblioteca a escolher, compatível com o Expo Go) | C | `GET /registro/aquario/{id}` |
 | 10 | Parâmetros ideais e espécies recomendadas | C | `/aquarios/{id}/parametros-ideais`, `/especies-recomendadas` |
 | 11 | Editar e excluir aquário | C | `PUT/DELETE /aquarios/{id}` |
 | 12 | Lembretes (criar, listar, concluir) com **notificação local** no celular | C | `/lembrete/...` |

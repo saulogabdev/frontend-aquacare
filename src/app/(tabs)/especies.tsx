@@ -7,6 +7,7 @@ import EspecieCard from "@/components/EspecieCard";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useEspecieContext } from "@/contexts/EspecieContext";
 import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
+import { CICLAGEM_DIAS, diasDesde, emCiclagem } from "@/utils/ciclagem";
 
 export default function Especies() {
     const { aquarios, idSelecionado } = useAquarioContext();
@@ -36,6 +37,17 @@ export default function Especies() {
     return (
         <Tela>
             <TituloTela titulo="Espécies" subtitulo="Catálogo e espécies do seu aquário" />
+
+            {/* Aviso (não bloqueio): durante a ciclagem não é indicado adicionar peixes */}
+            {aquarioSelecionado && emCiclagem(aquarioSelecionado) && (
+                <View style={styles.avisoCiclagem}>
+                    <Ionicons name="warning" size={20} color="#b45309" />
+                    <Text style={styles.textoAvisoCiclagem}>
+                        Este aquário está em ciclagem (dia {diasDesde(aquarioSelecionado.dataMontagem)} de {CICLAGEM_DIAS}).
+                        Não é indicado adicionar animais agora.
+                    </Text>
+                </View>
+            )}
 
             {/* Peixes do aquário selecionado */}
             <Card>
@@ -91,6 +103,21 @@ export default function Especies() {
 }
 
 const styles = StyleSheet.create({
+    avisoCiclagem: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        backgroundColor: "#fef3c7",
+        borderWidth: 1,
+        borderColor: "#fcd34d",
+        borderRadius: raio.medio,
+        padding: 14,
+    },
+    textoAvisoCiclagem: {
+        flex: 1,
+        color: "#b45309",
+        fontSize: 14,
+    },
     tituloSecao: {
         fontSize: 18,
         fontWeight: "bold",

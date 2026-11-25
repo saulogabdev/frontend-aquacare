@@ -12,6 +12,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { listarRegistros } from "@/services/registroService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { useFocusEffect, useRouter } from "expo-router";
+import GraficoParametros from "@/components/GraficoParametros";
 
 export default function Parametros() {
     // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
@@ -117,6 +118,8 @@ export default function Parametros() {
                     </Pressable>
                 </Card>
             )}
+
+            {aquarioSelecionado && <GraficoParametros registros={registros} />}
 
             {aquarioSelecionado && (
                 <View style={styles.secao}>
