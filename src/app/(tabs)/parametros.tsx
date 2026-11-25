@@ -13,6 +13,7 @@ import { listarRegistros } from "@/services/registroService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { useFocusEffect, useRouter } from "expo-router";
 import GraficoParametros from "@/components/GraficoParametros";
+import ParametrosIdeaisCard from "@/components/ParametrosIdeaisCard";
 
 export default function Parametros() {
     // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
@@ -73,6 +74,9 @@ export default function Parametros() {
                 titulo="Parâmetros"
                 subtitulo={aquarioSelecionado ? `Qualidade da água · ${aquarioSelecionado.nome}` : "Selecione um aquário no Dashboard"}
             />
+
+            {/* Faixa ideal para as espécies do aquário (GET /aquarios/{id}/parametros-ideais) */}
+            {aquarioSelecionado && <ParametrosIdeaisCard idAquario={aquarioSelecionado.id} />}
 
             {aquarioSelecionado && (
                 <Card>

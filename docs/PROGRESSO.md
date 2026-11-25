@@ -485,6 +485,25 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
    remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
    No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+18. **Parâmetros ideais (25/11):** `GET /aquarios/{id}/parametros-ideais` só devolve `phMin/phMax/tempMin/tempMax`
+    (as únicas faixas obrigatórias da espécie). Sugestão: incluir `ghMin/ghMax` e `salinidadeMin/salinidadeMax`
+    (mesmo `Math.max`/`Math.min`, só com as espécies que têm o valor; `null` se nenhuma tiver) — salinidade
+    importa para marinho. Para MARINHO, devolver também as faixas fixas de `calcio` (380–450) e `magnesio`
+    (1250–1400) que o `AnaliseParametroService` já usa, para o app não copiar os números. KH: não é faixa por espécie
+    (mede o efeito tampão = estabilidade do pH; o artigo 2.2.8 fala das "quedas de pH potencialmente letais"),
+    então é referência fixa por tipo de água: marinho 5–20 dKH [Citino 1989, já no artigo]; doce ainda sem
+    referência no artigo. Regra "KH baixo → oscilação de pH" = trabalho futuro. Sem espécies → 400. Faixas sem sobreposição → 200 com `phMin > phMax` (o app detecta).
+    **Lacuna do app (fazer antes de 08/12):** o `RegistroForm` não tem GH/KH/salinidade/cálcio/magnésio (vão sempre
+    `null`) → a análise de Ca/Mg do marinho (que o artigo descreve) nunca roda. Criar seção "Mais parâmetros
+    (opcional)": GH e KH para todos; salinidade, cálcio e magnésio só para MARINHO.
+17. **Dimensionamento de equipamentos (25/11):** (a) `DimensionamentoService` recebe `float` mas o campo é `Integer`/
+    `Float` nulável → termostato sem `potenciaWatts` (ou filtro sem `vazaoLH`, iluminação sem `lumens`) dá
+    NullPointerException (500). O app já exige o campo do tipo, mas o backend deveria validar (400). (b) Devolver
+    uma mensagem/recomendação junto do `dimensionadoCorretamente` (ex.: "Vazão abaixo do ideal: use 300–500 L/h").
+    (c) O artigo diz 30–60 lm/L **para aquários plantados**; o backend aplica a todos os aquários.
+    (d) **(ideia do Saulo)** Equipamento fora da faixa → alerta ATENCAO no **diagnóstico** (estado geral do aquário),
+    com um `verificarEquipamentos` igual ao `verificarGrupos`, usando o `DimensionamentoService`. No app não muda
+    nada (o DiagnosticoCard mostra qualquer alerta); o selo do card de Equipamentos continua.
 16. **Excluir aquário com dados dá 500 (25/11):** `RegistroParametro`, `AnimalAquario` e `Lembrete` apontam para o
     `Aquario` sem cascata → `DELETE /aquarios/{id}` de um aquário com registros/peixes viola a FK (erro 500 sem
     tratamento). Sugestão: `@OneToMany(mappedBy = "aquario", cascade = CascadeType.REMOVE)` no `Aquario` (ou
@@ -621,6 +640,26 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
 
+**Item 10 (25/11/2026): parâmetros ideais — Saulo fez o tipo (com aula), Claude terminou. FALTA TESTAR.**
+- Tipo `ParametrosIdeais { phMin, phMax, tempMin, tempMax }` — nomes IGUAIS aos do JSON (o Saulo tinha escrito
+  `temperaturaMin`; o TS não acusa, e a tela mostraria "undefined").
+- `aquarioService.buscarParametrosIdeais`: `GET /aquarios/{id}/parametros-ideais`, 400 (sem espécies) → `null`.
+- `ParametrosIdeaisCard` (topo da aba Parâmetros), autossuficiente com `useFocusEffect`. Três casos: sem espécies;
+  faixas sem sobreposição (`faixaViavel` calculado: o backend devolve mínimo > máximo e o APP detecta → aviso
+  vermelho, como no protótipo); faixa ideal (pH ciano, temperatura laranja).
+- Só pH e temperatura (únicas faixas obrigatórias por espécie). GH/salinidade/Ca/Mg/KH: ver item 18 do Brayan.
+
+**Item 13 (25/11/2026): equipamentos — feito pelo Claude, FALTA o Saulo revisar e testar.**
+- Tipo `Equipamento` + `dimensionadoCorretamente` (vem do backend); `NovoEquipamento` sem ele.
+- `equipamentoService.ts`: `listarEquipamentos` (GET `/equipamento/aquario/{id}`), `cadastrarEquipamento` (POST),
+  `excluirEquipamento` (DELETE).
+- `EquipamentoForm`: 3 tipos (Filtro/Termostato/Iluminação); o campo técnico muda com o tipo (vazão L/h, potência W,
+  lúmens) e é OBRIGATÓRIO (sem ele o backend dá 500); texto de ajuda com a faixa do artigo para a litragem.
+  Tabela `infoTipo: Record<TipoEquipamento, ...>` (mesma ideia da `aparencia` do DiagnosticoCard).
+- `EquipamentosCard` (Dashboard): componente autossuficiente (carrega com `useFocusEffect` + `recarregar`, adiciona,
+  exclui) — só o Dashboard usa. Selo "✓ Bem dimensionado" / "⚠ Fora da faixa" (regra 3 do artigo, calculada pelo
+  backend: filtro 3–5×/h, termostato ≥ 1 W/L, iluminação 30–60 lm/L).
+
 **Item 11 Parte A (25/11/2026): ciclagem — código pronto, FALTA TESTAR.** Saulo: service `atualizarAquario` (PUT),
 `editarAquario` no Context, `utils/ciclagem.ts` (`CICLAGEM_DIAS = 30`, `diasDesde` montando o `Date` à mão — meses
 começam em 0 — e `emCiclagem = !isCiclado && dias < 30`), etiqueta no banner e `encerrarCiclagem` no Dashboard
@@ -741,10 +780,10 @@ Motivo de adiantar: sem espécie associada o SAD não analisa nada (antes só da
 | 7 | Enciclopédia: lista de animais e plantas, busca por nome, tela de detalhe (`especie/[id]`) | C | `/animal/...`, `/planta/...` |
 | 8 | ✅ Associar espécies ao aquário e listar as espécies do aquário | C | `/animal-aquario/...`, `/planta-aquario/...` |
 | 9 | ✅ Gráficos da variação de cada parâmetro (biblioteca a escolher, compatível com o Expo Go) | C | `GET /registro/aquario/{id}` |
-| 10 | Parâmetros ideais e espécies recomendadas | C | `/aquarios/{id}/parametros-ideais`, `/especies-recomendadas` |
+| 10 | ✅ Parâmetros ideais e espécies recomendadas | C | `/aquarios/{id}/parametros-ideais`, `/especies-recomendadas` |
 | 11 | Editar e excluir aquário | C | `PUT/DELETE /aquarios/{id}` |
 | 12 | Lembretes (criar, listar, concluir) com **notificação local** no celular | C | `/lembrete/...` |
-| 13 | Equipamentos (cadastro e listagem) — verificar com o Brayan onde fica o dimensionamento | C | `/equipamento/...` |
+| 13 | ✅ Equipamentos (cadastro e listagem) — verificar com o Brayan onde fica o dimensionamento | C | `/equipamento/...` |
 | 14 | Últimos dias: testes no iPhone, prints para o artigo, ensaio da apresentação | S | — |
 
 **Admin (a definir depois, 13/11/2026):** o admin vai ter **uma tela simples para ver os pedidos dos usuários**.

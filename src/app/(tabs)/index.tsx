@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import BannerAquario from "@/components/BannerAquario";
+import EquipamentosCard from "@/components/EquipamentosCard";
 import { CabecalhoCard, Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
 import { cores, gradientes, raio, sombra } from "@/theme";
 
@@ -153,6 +154,9 @@ export default function Index() {
             )}
             <MensagemErro texto={erroRemover} />
           </Card>
+
+          {/* Equipamentos + dimensionamento (regra do artigo, calculada pelo backend) */}
+          <EquipamentosCard aquario={aquarioSelecionado} />
 
           {/* Números */}
           <View style={styles.grade}>
