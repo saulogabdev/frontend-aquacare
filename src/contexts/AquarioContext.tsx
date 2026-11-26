@@ -1,5 +1,5 @@
 import { Aquario, NovoAquario } from "@/types";
-import { listarMeusAquarios, cadastrarAquario, atualizarAquario } from "@/services/aquarioService";
+import { listarMeusAquarios, cadastrarAquario, atualizarAquario, excluirAquario } from "@/services/aquarioService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { createContext, useState, ReactNode, useContext, useEffect } from "react";
 import { useAuthContext } from "./AuthContext";
@@ -10,6 +10,7 @@ type AquarioContextType = {
     adicionarAquario: (novoAquario: NovoAquario) => Promise<void>;
     selecionarAquario: (idAquario: number) => void;
     editarAquario: (idAquario: number, dadosAtualizados: NovoAquario) => Promise<void>;
+    removerAquario: (idAquario: number) => Promise<void>;
     erro: string;
     carregando: boolean;
 }
@@ -55,6 +56,7 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
         carregarAquarios();
     }, [token, sair]);
 
+
     
     // O erro continua subindo para o formulário (que mostra a mensagem e mantém os campos).
     // O catch só existe para, antes disso, deslogar se a sessão tiver expirado.
@@ -72,6 +74,26 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
             setAquarios(listaAtualizada);
 
             setIdSelecionado(listaAtualizada.reduce((idMaior, aquario) => Math.max(idMaior, aquario.id), 0));
+        } catch (error) {
+            if (ehSessaoExpirada(error)) {
+                await sair(MENSAGEM_SESSAO_EXPIRADA);
+            }
+            throw error;
+        }
+    }
+
+    async function removerAquario(idAquario: number): Promise<void> {
+        if (token === null) {
+            throw new Error("Usuário não autenticado");
+        }
+
+        try {
+            await excluirAquario(token, idAquario);
+            if (idSelecionado === idAquario) {
+                setIdSelecionado(null);
+            }
+            const listaAtualizada = await listarMeusAquarios(token);
+            setAquarios(listaAtualizada);
         } catch (error) {
             if (ehSessaoExpirada(error)) {
                 await sair(MENSAGEM_SESSAO_EXPIRADA);
@@ -107,6 +129,7 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
         idSelecionado,
         adicionarAquario,
         selecionarAquario,
+        removerAquario,
         editarAquario,
         erro,
         carregando,

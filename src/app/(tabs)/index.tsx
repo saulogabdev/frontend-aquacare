@@ -12,16 +12,18 @@ import { useAquarioContext,  } from "@/contexts/AquarioContext";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Diagnostico, NovoAquario } from "@/types";
+import { Aquario, Diagnostico, NovoAquario } from "@/types";
 import { buscarDiagnostico } from "@/services/aquarioService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import DiagnosticoCard from "@/components/DiagnosticoCard";
+import ModalExcluirAquario from "@/components/ModalExcluirAquario";
+import ModalEditarAquario from "@/components/ModalEditarAquario";
 import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
 
 export default function Index() {
     // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
     const router = useRouter();
-  const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando, editarAquario } = useAquarioContext();
+  const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando, editarAquario, removerAquario } = useAquarioContext();
   const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
   const listaVazia = !carregando && erro === "" && aquarios.length === 0;
   const [diagnostico, setDiagnostico] = useState<Diagnostico | null>(null);
@@ -32,6 +34,10 @@ export default function Index() {
   const [erroRemover, setErroRemover] = useState("");
   // O formulário de novo aquário só aparece ao tocar em "+ Novo" (como no protótipo).
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  // Aquário que o usuário pediu para excluir (abre o modal de confirmação); null = modal fechado.
+  const [aquarioParaExcluir, setAquarioParaExcluir] = useState<Aquario | null>(null);
+  // Mesmo truque para a edição: o aquário guardado aqui abre o painel "Editar aquário".
+  const [aquarioParaEditar, setAquarioParaEditar] = useState<Aquario | null>(null);
   // Soma das quantidades de todas as espécies (valor calculado).
   const totalPeixes = peixes.reduce((soma, peixe) => soma + peixe.quantidade, 0);
 
@@ -46,6 +52,18 @@ export default function Index() {
         setErroRemover(error.message);
       }
     }
+  }
+
+  // Só roda depois da confirmação no modal. Se der erro, ele sobe e o modal mostra (e continua aberto).
+  async function excluirAquario(aquario: Aquario) {
+    await removerAquario(aquario.id);
+    setAquarioParaExcluir(null);
+  }
+
+  // Se o PUT falhar, o erro sobe, o formulário mostra a mensagem e o painel continua aberto.
+  async function salvarEdicao(aquario: Aquario, dados: NovoAquario) {
+    await editarAquario(aquario.id, dados);
+    setAquarioParaEditar(null);
   }
 
   async function criarAquario(novo: NovoAquario) {
@@ -109,7 +127,14 @@ export default function Index() {
           <EstadoVazio icone="fish-outline" titulo="Nenhum aquário criado" texto="Toque em + Novo para criar o primeiro." />
         )}
         {aquarios.map((aquario) => (
-          <AquarioCard key={aquario.id} aquario={aquario} onPress={() => selecionarAquario(aquario.id)} ativo={aquario.id === idSelecionado} />
+          <AquarioCard
+            key={aquario.id}
+            aquario={aquario}
+            onPress={() => selecionarAquario(aquario.id)}
+            ativo={aquario.id === idSelecionado}
+            onEditar={() => setAquarioParaEditar(aquario)}
+            onExcluir={() => setAquarioParaExcluir(aquario)}
+          />
         ))}
       </Card>
 
@@ -197,6 +222,17 @@ export default function Index() {
           </View>
         </>
       )}
+
+      <ModalExcluirAquario
+        aquario={aquarioParaExcluir}
+        onConfirmar={excluirAquario}
+        onCancelar={() => setAquarioParaExcluir(null)}
+      />
+      <ModalEditarAquario
+        aquario={aquarioParaEditar}
+        onSalvar={salvarEdicao}
+        onFechar={() => setAquarioParaEditar(null)}
+      />
     </Tela>
   );
 }

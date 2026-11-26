@@ -11,7 +11,9 @@ export type ParametroAlerta =
   | 'MAGNESIO'
   | 'GRUPO'
   | 'COMPATIBILIDADE'
-  | 'CICLAGEM';
+  | 'CICLAGEM'
+  | 'ILUMINACAO' // plantas × iluminação do aquário (diagnóstico, desde 26/11)
+  | 'CO2';       // plantas × injeção de CO₂ (diagnóstico, desde 26/11)
 
 export type RegistroParametro = {
   idParametro: number;

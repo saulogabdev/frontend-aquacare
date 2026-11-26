@@ -95,3 +95,16 @@ export async function buscarParametrosIdeais(token: string, idAquario: number): 
     const ideais: ParametrosIdeais = await response.json();
     return ideais;
 }
+
+export async function excluirAquario(token: string, idAquario: number): Promise<void> {
+    const response = await apiFetch(`${API_URL}/aquarios/${idAquario}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        throw await erroDaResposta(response, "Falha ao excluir aquário");
+    }
+}
