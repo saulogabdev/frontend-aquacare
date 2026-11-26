@@ -11,13 +11,16 @@ export type Aquario = {
   dataMontagem: string;
   isCiclado: boolean;
   injecaoCO2: boolean;
+  // Calculados pelo backend (25/11): em ciclagem = !isCiclado && menos de 30 dias desde a montagem.
+  emCiclagem: boolean;
+  diasMontagem: number;
 };
 
 export type NovoAquario = {
   nome: string;
   litragem: number;
   tipoAgua: TipoAgua;
-  nivelPlanta: NivelPlantas;
+  nivelPlantas: NivelPlantas; // mesmo nome da resposta (o backend corrigiu em 25/11)
   isCiclado: boolean;
   injecaoCO2: boolean;
 };

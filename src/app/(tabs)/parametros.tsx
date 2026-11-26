@@ -1,11 +1,13 @@
 import { ActivityIndicator, Pressable, Text, StyleSheet, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
-import { cores, raio } from "@/theme";
+import { cores, gradientes, raio } from "@/theme";
 import RegistroCard from "@/components/RegistroCard";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useRegistroContext } from "@/contexts/RegistroContext";
-import RegistroForm, { MedicoesRegistro } from "@/components/RegistroForm";
+import { MedicoesRegistro } from "@/components/RegistroForm";
+import ModalNovoRegistro from "@/components/ModalNovoRegistro";
+import { LinearGradient } from "expo-linear-gradient";
 import { Alerta, RegistroParametro } from "@/types/registro";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -14,6 +16,7 @@ import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { useFocusEffect, useRouter } from "expo-router";
 import GraficoParametros from "@/components/GraficoParametros";
 import ParametrosIdeaisCard from "@/components/ParametrosIdeaisCard";
+import AlertaItem from "@/components/AlertaItem";
 
 export default function Parametros() {
     // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
@@ -22,8 +25,8 @@ export default function Parametros() {
     const {token, sair} = useAuthContext();
     const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
     const {adicionarRegistro} = useRegistroContext();
-    const [alertasPorAquario, setAlertasPorAquario] = useState<Record<number, Alerta[]>>({});
-    const alertas = idSelecionado !== null ? alertasPorAquario[idSelecionado] ?? null : null;
+    // O painel "Novo Registro" aparece quando este estado é true.
+    const [mostrarModal, setMostrarModal] = useState(false);
     const [registros, setRegistros] = useState<RegistroParametro[]>([]);
     const [carregandoRegistros, setCarregandoRegistros] = useState(false);
     const [erroRegistros, setErroRegistros] = useState<string>("");
@@ -57,16 +60,16 @@ export default function Parametros() {
         if (!aquarioSelecionado) {
             return;
         }
-        const novosAlertas = await adicionarRegistro({
+        await adicionarRegistro({
             idAquario: aquarioSelecionado.id,
             ...medicoes
         });
-        setAlertasPorAquario({ ...alertasPorAquario, [aquarioSelecionado.id]: novosAlertas });
         await recarregarRegistros();
     }
 
 
     const registrosOrdenados = [...registros].sort((a, b) => b.dataHora.localeCompare(a.dataHora));
+    const alertasUltimoRegistro = registrosOrdenados.length > 0 ? registrosOrdenados[0].alertas : null;
 
     return (
         <Tela>
@@ -78,18 +81,19 @@ export default function Parametros() {
             {/* Faixa ideal para as espécies do aquário (GET /aquarios/{id}/parametros-ideais) */}
             {aquarioSelecionado && <ParametrosIdeaisCard idAquario={aquarioSelecionado.id} />}
 
+            {/* Painel "Novo Registro" (abre pelo botão + Novo de "Registros Diários") */}
             {aquarioSelecionado && (
-                <Card>
-                    <View style={styles.cabecalho}>
-                        <Ionicons name="water" size={20} color={cores.primaria} />
-                        <Text style={styles.tituloCard}>Novo registro</Text>
-                    </View>
-                    <RegistroForm onSalvar={salvarRegistro} />
-                </Card>
+                <ModalNovoRegistro
+                    visivel={mostrarModal}
+                    marinho={aquarioSelecionado.tipoAgua === "MARINHO"}
+                    nomeAquario={aquarioSelecionado.nome}
+                    onSalvar={salvarRegistro}
+                    onFechar={() => setMostrarModal(false)}
+                />
             )}
 
             {/* Resultado do último registro: a resposta do POST (alertas da ÁGUA). O diagnóstico geral fica no Dashboard. */}
-            {alertas !== null && alertas.length === 0 && (
+            {alertasUltimoRegistro !== null && alertasUltimoRegistro.length === 0 && (
                 <View style={[styles.resultado, styles.tudoCerto]}>
                     <Ionicons name="checkmark-circle" size={22} color="#15803d" />
                     <Text style={[styles.textoResultado, styles.textoTudoCerto]}>
@@ -98,25 +102,13 @@ export default function Parametros() {
                 </View>
             )}
 
-            {alertas !== null && alertas.length > 0 && (
+            {alertasUltimoRegistro !== null && alertasUltimoRegistro.length > 0 && (
                 <Card>
                     <View style={styles.cabecalho}>
                         <Ionicons name="warning" size={20} color="#b45309" />
                         <Text style={styles.tituloCard}>Alertas do último registro</Text>
                     </View>
-                    {alertas.map((alerta, indice) => {
-                        const critico = alerta.severidade === "CRITICO";
-                        return (
-                            <View key={indice} style={[styles.alerta, critico ? styles.critico : styles.atencao]}>
-                                <Text style={[styles.rotulo, critico ? styles.textoCritico : styles.textoAtencao]}>
-                                    {critico ? "Crítico" : "Atenção"}
-                                </Text>
-                                <Text style={[styles.textoResultado, critico ? styles.textoCritico : styles.textoAtencao]}>
-                                    {alerta.mensagem}
-                                </Text>
-                            </View>
-                        );
-                    })}
+                    {alertasUltimoRegistro.map((alerta, indice) => <AlertaItem key={indice} alerta={alerta} />)}
                     <Pressable onPress={() => router.push("/")}>
                         <Text style={styles.link}>Ver diagnóstico do aquário →</Text>
                     </Pressable>
@@ -127,15 +119,23 @@ export default function Parametros() {
 
             {aquarioSelecionado && (
                 <View style={styles.secao}>
-                    <Text style={styles.tituloSecao}>Registros Diários</Text>
-                    <Text style={styles.contador}>{registrosOrdenados.length} registros</Text>
+                    <View>
+                        <Text style={styles.tituloSecao}>Registros Diários</Text>
+                        <Text style={styles.contador}>{registrosOrdenados.length} registros</Text>
+                    </View>
+                    <Pressable onPress={() => setMostrarModal(true)}>
+                        <LinearGradient colors={gradientes.marca} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.botaoNovo}>
+                            <Ionicons name="add" size={18} color={cores.branco} />
+                            <Text style={styles.textoBotaoNovo}>Novo</Text>
+                        </LinearGradient>
+                    </Pressable>
                 </View>
             )}
             {carregandoRegistros && registrosOrdenados.length === 0 && <ActivityIndicator color={cores.primaria} />}
             <MensagemErro texto={erroRegistros} />
             {aquarioSelecionado && !carregandoRegistros && erroRegistros === "" && registrosOrdenados.length === 0 && (
                 <Card>
-                    <EstadoVazio icone="calendar-outline" titulo="Nenhum registro ainda" texto="Faça a primeira medição no formulário acima." />
+                    <EstadoVazio icone="calendar-outline" titulo="Nenhum registro ainda" texto="Toque em + Novo para registrar a primeira medição." />
                 </Card>
             )}
             {registrosOrdenados.map((registro) => (
@@ -202,9 +202,23 @@ const styles = StyleSheet.create({
     },
     secao: {
         flexDirection: "row",
-        alignItems: "baseline",
+        alignItems: "center",
         justifyContent: "space-between",
         marginBottom: -4,
+    },
+    botaoNovo: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingLeft: 12,
+        paddingRight: 16,
+        paddingVertical: 10,
+        borderRadius: 999,
+    },
+    textoBotaoNovo: {
+        color: cores.branco,
+        fontWeight: "bold",
+        fontSize: 15,
     },
     tituloSecao: {
         fontSize: 20,

@@ -34,7 +34,7 @@ function Chip({ icone, texto }: { icone: keyof typeof Ionicons.glyphMap; texto: 
 export default function BannerAquario({ aquario, onEncerrarCiclagem }: BannerAquarioProps) {
     // O pop-up aparece quando este estado é true (o "visible" do Modal é controlado por estado).
     const [mostrarModal, setMostrarModal] = useState(false);
-    const ciclando = emCiclagem(aquario);
+    const ciclando = aquario.emCiclagem;
 
     return (
         <LinearGradient colors={gradientes.marca} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} style={styles.banner}>
@@ -43,7 +43,7 @@ export default function BannerAquario({ aquario, onEncerrarCiclagem }: BannerAqu
                 {aquario.litragem}L  •  {aquario.tipoAgua === "DOCE" ? "Água doce" : "Marinho"}  •  Desde {formatarData(aquario.dataMontagem)}
             </Text>
             <View style={styles.chips}>
-                <Chip icone="sync" texto={!ciclando ? "Ciclado" : `Em ciclagem · dia ${diasDesde(aquario.dataMontagem)} de ${CICLAGEM_DIAS}`} />
+                <Chip icone="sync" texto={!ciclando ? "Ciclado" : `Em ciclagem · dia ${aquario.diasMontagem} de ${CICLAGEM_DIAS}`} />
                 {aquario.injecaoCO2 && <Chip icone="water" texto="CO₂ ativo" />}
                 <Chip icone="leaf" texto={`Plantas: ${rotuloPlantas[aquario.nivelPlantas]}`} />
             </View>

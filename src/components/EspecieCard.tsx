@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Keyboard } from "react-native";
-import { Agressividade, Animal, RegiaoNado } from "@/types";
+import { Agressividade, Alerta, Animal, RegiaoNado } from "@/types";
+import AlertaItem from "@/components/AlertaItem";
 import { cores, sombra } from "@/theme";
 
 type EspecieCardProps = {
     animal: Animal;
-
-    onAdicionar?: (quantidade: number) => Promise<void>;
+    // undefined = não há aquário selecionado (o botão de adicionar não aparece).
+    // Devolve os alertas da associação (ex.: "aquário em ciclagem"), que o card mostra.
+    onAdicionar?: (quantidade: number) => Promise<Alerta[]>;
 };
 
 const rotuloAgressividade: Record<Agressividade, string> = {
@@ -26,6 +28,8 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
     const [quantidade, setQuantidade] = useState("");
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
+    // Alertas da última vez que esta espécie foi adicionada (a espécie É adicionada; o alerta só informa).
+    const [alertas, setAlertas] = useState<Alerta[]>([]);
 
     async function confirmar() {
         if (!onAdicionar) return;
@@ -37,12 +41,13 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
         Keyboard.dismiss();
         setSalvando(true);
         setErro("");
+        setAlertas([]);
         try {
-            await onAdicionar(numero);
+            const novos = await onAdicionar(numero);
+            setAlertas(novos);
             setAberto(false);
             setQuantidade("");
         } catch (e) {
-            // Aqui aparece, por exemplo, a mensagem de incompatibilidade que o backend devolve.
             if (e instanceof Error) {
                 setErro(e.message);
             }
@@ -103,11 +108,28 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
             )}
 
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+
+            {/* Adicionado, mas com ressalvas: o SAD avisa e deixa o usuário decidir */}
+            {alertas.length > 0 && (
+                <View style={styles.alertas}>
+                    <Text style={styles.adicionado}>✓ Adicionado ao aquário, com {alertas.length === 1 ? "um alerta" : "alertas"}:</Text>
+                    {alertas.map((alerta, indice) => <AlertaItem key={indice} alerta={alerta} />)}
+                </View>
+            )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    alertas: {
+        gap: 6,
+        marginTop: 6,
+    },
+    adicionado: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#15803d",
+    },
     cartao: {
         ...sombra,
         backgroundColor: "#ffffff",

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Diagnostico, EstadoAquario } from "@/types";
 import { raio, sombra } from "@/theme";
+import AlertaItem from "@/components/AlertaItem";
 
 type DiagnosticoCardProps = {
     diagnostico: Diagnostico;
@@ -18,24 +19,23 @@ export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
     const cores = aparencia[diagnostico.estado];
 
     return (
-        <View style={[styles.cartao, { backgroundColor: cores.fundo, borderColor: cores.borda }]}>
+        // Card branco com a faixa da esquerda na cor do estado; os alertas (AlertaItem) têm a própria cor.
+        <View style={[styles.cartao, { borderLeftColor: cores.texto }]}>
             <Text style={styles.titulo}>Diagnóstico do aquário</Text>
-            <View style={styles.linhaEstado}>
+            <View style={[styles.linhaEstado, { backgroundColor: cores.fundo }]}>
                 <Ionicons name={cores.icone} size={26} color={cores.texto} />
                 <Text style={[styles.estado, { color: cores.texto }]}>{cores.rotulo}</Text>
+                {diagnostico.alertas.length > 0 && (
+                    <Text style={[styles.contagem, { color: cores.texto }]}>
+                        {diagnostico.alertas.length} {diagnostico.alertas.length === 1 ? "alerta" : "alertas"}
+                    </Text>
+                )}
             </View>
 
             {diagnostico.alertas.length === 0 ? (
                 <Text style={[styles.alerta, { color: cores.texto }]}>Nenhum problema encontrado no último registro.</Text>
             ) : (
-                diagnostico.alertas.map((alerta, indice) => (
-                    <Text
-                        key={indice}
-                        style={[styles.alerta, { color: alerta.severidade === "CRITICO" ? "#b91c1c" : "#b45309" }]}
-                    >
-                        • {alerta.mensagem}
-                    </Text>
-                ))
+                diagnostico.alertas.map((alerta, indice) => <AlertaItem key={indice} alerta={alerta} />)
             )}
         </View>
     );
@@ -44,10 +44,11 @@ export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
 const styles = StyleSheet.create({
     cartao: {
         ...sombra,
+        backgroundColor: "#ffffff",
         padding: 16,
         borderRadius: raio.medio,
-        borderWidth: 1,
-        gap: 6,
+        borderLeftWidth: 5,
+        gap: 8,
     },
     titulo: {
         fontSize: 12,
@@ -59,6 +60,13 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
+        padding: 10,
+        borderRadius: raio.pequeno,
+    },
+    contagem: {
+        marginLeft: "auto",
+        fontSize: 13,
+        fontWeight: "600",
     },
     estado: {
         fontSize: 22,

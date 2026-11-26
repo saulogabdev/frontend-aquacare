@@ -465,6 +465,18 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 
 ## Para levar ao Brayan
 
+**✅ Entregue pelo Brayan em 25/11 (commits ea88b13…a5acfb9 no backend):** segurança/IDOR em todas as rotas;
+401 sem token; JWT 7 dias; `nivelPlantas` no request (⚠️ quebrava o app → app corrigido em 26/11); Swagger fqn;
+compatibilidade vira ALERTA (associar devolve `List<Alerta>`); ciclagem no diagnóstico e no associar +
+`emCiclagem`/`diasMontagem` no AquarioResponse; alerta "sem espécies"; `Alerta { parametro, mensagem, severidade,
+recomendacao }` (pH/temp/Ca/Mg separados em acima/abaixo); alertas salvos por registro e devolvidos no
+`GET /registro/aquario/{id}` (`alertas`); associação duplicada soma a quantidade.
+**Ainda NÃO feito:** diagnóstico sem medição (19, ainda lança 400), equipamentos no diagnóstico (17-d), cascata ao
+excluir aquário (16), parâmetros ideais com GH/salinidade/Ca/Mg (18), e-mail configurado (8).
+**App a adaptar:** recomendação nos alertas; valores coloridos no histórico (`parametro`); "alertas do último registro"
+vindos do histórico (tira o `alertasPorAquario`); mostrar os alertas devolvidos ao associar espécie; usar
+`emCiclagem`/`diasMontagem` da API em vez de calcular.
+
 1. **Segurança:** `/aquarios/{id}`, `/registro/...` e `/aquarios/listar-todos` não conferem se o aquário é do
    usuário logado. Qualquer usuário logado vê, edita e apaga os aquários dos outros.
 2. Sem token, ou com token inválido/expirado, a resposta é **403 sem corpo**, e não 401. Token inválido gera
@@ -485,6 +497,24 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
    para a recomendação certa. Ex.: amônia tóxica → "Troca parcial de 30–50%, suspender alimentação por 24 h,
    remover matéria orgânica". No app: `recomendacao?: string` (opcional) no tipo `Alerta` e exibir no cartão.
    No artigo: fecha o ciclo do SAD (dados → modelo → informação → apoio à decisão).
+21. **Peixe de água doce em aquário marinho (26/11, pergunta do Saulo):** hoje NADA impede nem alerta. A espécie não
+    tem tipo de água (só `salinidade_min/max` opcionais, vazios nas 9 do script); a compatibilidade só compara peixe
+    com peixe; a análise usa "marinho" só para a Equação 2 e Ca/Mg. Pedido: `tipoAgua` na espécie (DOCE/MARINHO,
+    talvez SALOBRA); alerta CRITICO no associar e no diagnóstico quando difere do aquário; `tipoAgua` no
+    AnimalResponse. App depois: catálogo filtrado pelo tipo do aquário selecionado + etiqueta no card. Script: incluir
+    2–3 espécies marinhas (palhaço, cirurgião, donzela) com salinidade.
+20. **Plantas e equipamentos essenciais no diagnóstico (26/11):** as plantas só entram na compatibilidade (ao associar);
+    o diagnóstico/análise só olham os peixes. Possível: pH/temp fora da faixa da planta (ATENCAO), `co2Necessario` sem
+    `injecaoCO2`, iluminação alta × equipamento fraco. **Mas o app não tem nada de plantas → plantas inteiras (tela +
+    diagnóstico) = TRABALHO FUTURO.** Opcional: alerta "Nenhum filtro/termostato cadastrado".
+    CO₂: `registro.co2` e `aquario.injecaoCO2` só são guardados; `planta.co2Necessario`/`iluminacao`/`dificuldade` só
+    filtram o catálogo. Regras possíveis (todas trabalho futuro, precisam de faixa com citação): planta exige CO₂ sem
+    injeção; CO₂ medido baixo para plantas; CO₂ alto = risco de asfixia para peixes (vale sem plantas); planta de luz
+    alta × lúmens. Frase para o artigo: "o modelo de dados já armazena...; as regras ficam como trabalho futuro".
+19. **Diagnóstico sem medição (26/11, ideia do Saulo):** hoje `DiagnosticoService` lança 400 sem registro → nenhuma
+    verificação roda. Cardume, compatibilidade, ciclagem e equipamentos não dependem da água. Sugestão: sem registro,
+    adicionar alerta ATENCAO "Nenhuma medição registrada..." e pular só o `analisar(registro)`; o resto roda sempre
+    (aquário sem medição nunca fica "Saudável"). App: nada muda (o 400 → null deixa de acontecer sozinho).
 18. **Parâmetros ideais (25/11):** `GET /aquarios/{id}/parametros-ideais` só devolve `phMin/phMax/tempMin/tempMax`
     (as únicas faixas obrigatórias da espécie). Sugestão: incluir `ghMin/ghMax` e `salinidadeMin/salinidadeMax`
     (mesmo `Math.max`/`Math.min`, só com as espécies que têm o valor; `null` se nenhuma tiver) — salinidade
@@ -496,9 +526,7 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
     **Lacuna do app (fazer antes de 08/12):** o `RegistroForm` não tem GH/KH/salinidade/cálcio/magnésio (vão sempre
     `null`) → a análise de Ca/Mg do marinho (que o artigo descreve) nunca roda. Criar seção "Mais parâmetros
     (opcional)": GH e KH para todos; salinidade, cálcio e magnésio só para MARINHO.
-17. **Dimensionamento de equipamentos (25/11):** (a) `DimensionamentoService` recebe `float` mas o campo é `Integer`/
-    `Float` nulável → termostato sem `potenciaWatts` (ou filtro sem `vazaoLH`, iluminação sem `lumens`) dá
-    NullPointerException (500). O app já exige o campo do tipo, mas o backend deveria validar (400). (b) Devolver
+17. **Dimensionamento de equipamentos (25/11):** (a) ~~NPE sem o campo técnico~~ CORRIGIDO em 26/11: o `EquipamentoService.verificarTipagem` já valida e devolve 400 ("Vazão é obrigatória..."); o app também valida antes. (b) Devolver
     uma mensagem/recomendação junto do `dimensionadoCorretamente` (ex.: "Vazão abaixo do ideal: use 300–500 L/h").
     (c) O artigo diz 30–60 lm/L **para aquários plantados**; o backend aplica a todos os aquários.
     (d) **(ideia do Saulo)** Equipamento fora da faixa → alerta ATENCAO no **diagnóstico** (estado geral do aquário),
@@ -546,6 +574,15 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
       precisa confirmar a fórmula na fonte e citar uma faixa de referência de CO2. Candidata nº 1 se fizerem
       UMA regra extra.
 
+22. **E-mail de recuperação de senha (26/11, corrigido no backend LOCAL do Saulo, sem commit):**
+    - O `EmailService` não tinha `setFrom(...)`. Sem remetente, o JavaMail inventa `usuario-do-windows@nome-do-pc`;
+      com acento ("USUÁRIO") o Gmail recusa. Correção: `@Value("${spring.mail.username}") private String remetente;`
+      + `mensagem.setFrom(remetente);`. Testado ✅ (o e-mail caiu no spam).
+    - Adicionar `"/error"` ao `permitAll` do `SecurityConfig`: hoje qualquer erro interno numa rota pública vira um
+      401 falso (o Spring redireciona para `/error`, que exige login). Foi o que escondeu o erro acima.
+    - Opcional: tratar falha de envio no `GlobalExceptionHandler` com mensagem amigável; responder sempre 200 no
+      `recuperar-senha` (hoje "Email não encontrado." revela quem tem conta).
+
 ## Próximos passos
 
 **Aula 7, integração com a API:**
@@ -564,6 +601,48 @@ Correção no backend: `springdoc.use-fqn=true` no `application.properties`, ou 
 
 **Prazos (atualizado em 25/11):** o **ARTIGO** é entregue até **27/11**. O **app** pode continuar evoluindo até
 **08/12**, desde que não fuja do que o artigo descreve (nada grande que não esteja no texto).
+
+**Requisitos do artigo (Quadro 2, versão de 24/09) × app (26/11):** 9 ✅, 5 🟡, 4 ❌.
+✅ Autenticar; Verificar Compatibilidade; Histórico; Analisar Registros (+recomendação); Diagnosticar; Gráficos;
+Dimensionar Equipamento; (e parte de vários abaixo).
+🟡 Gerenciar Aquário (falta editar completo/excluir); Animal no Aquário (falta editar quantidade); Enciclopédia (falta
+detalhe e filtros); Registro de Parâmetro (falta editar/excluir); Recomendar (falta **espécies recomendadas** — rota
+`/aquarios/{id}/especies-recomendadas` já existe).
+✅ Recuperar Senha (26/11, testado de ponta a ponta; precisou do `setFrom` no backend, ver item 22 do Brayan). ❌ Gerenciar Conta (backend tem PUT/DELETE `/usuarios/{id}`); Planta no Aquário
+(futuro); Catálogo pelo admin (hoje Swagger/SQL); Gerenciar Lembrete ✅ e Notificar Lembrete ✅ (26/11, notificação LOCAL; push remoto = trabalho futuro).
+Texto: conclusão ainda vazia; manter os não feitos no quadro e citá-los nos trabalhos futuros; acrescentar ciclagem,
+faixas sem sobreposição, Ca/Mg com dados reais.
+
+**Ideias para impressionar na banca (26/11, até 08/12):**
+1. Faixa ideal no gráfico (faixa colorida atrás da linha, como no protótipo) — ~40 min, alto impacto visual.
+2. Recomendações nos alertas (quando o Brayan entregar o item 1) — ~30 min no app.
+3. "Mais parâmetros" no `RegistroForm` (GH, KH; salinidade/cálcio/magnésio no marinho) — faz a análise de Ca/Mg do
+   artigo funcionar — ~1 h.
+4. Cenário de demonstração (script SQL: aquário "problemático" com espécies, registros em vários dias e alerta
+   crítico) — apresentação não depende de digitar na hora — ~30 min.
+5. ✅ Recuperação de senha (26/11): `recuperar-senha.tsx` em 3 etapas (email → codigo → pronto), link "Esqueci minha senha"
+   no login, rota no grupo sem login do `_layout`. Service: Saulo; tela: Claude. MAIL_PASSWORD = **senha de app** do Gmail
+   (16 letras, exige verificação em 2 etapas), não a senha da conta. O código é um UUID: copiar e colar do e-mail.
+6. ✅ **Lembretes (26/11), testado no iPhone com o app fechado.** Service + tipo: Saulo; resto: Claude.
+   - Notificação **local** (`expo-notifications`, funciona no Expo Go). Push remoto (o `@Scheduled` + Expo Push do
+     Brayan) exige development build + FCM/APNs (conta Apple paga) → trabalho futuro.
+   - **Ideia do Saulo, a sincronização:** o servidor é a fonte da verdade. Ao entrar no app e a cada recarga da aba,
+     `sincronizarNotificacoes` cancela tudo e reagenda os futuros não concluídos. Ao sair, cancela tudo.
+     Limite: um 2º celular só fica sabendo de um lembrete novo quando abre o app.
+   - Data sem fuso: `paraLocalDateTime(date)` em `utils/dataHora.ts` (nunca `toISOString()`, que vira UTC e
+     adianta 3 h). O PUT do backend substitui tudo: para concluir, manda o lembrete inteiro.
+   - No Expo Go a notificação aparece como "Expo Go" (permissão: Ajustes → Expo Go → Notificações).
+   - Lint: o `npx expo lint` tem cache em `.expo/cache/eslint`; se acusar algo sem sentido, apagar a pasta.
+Trabalho futuro "adicionável": regras de CO₂/plantas/iluminação (base de dados já pronta).
+
+**Teste da amônia tóxica para a banca (26/11, conferido com a fórmula do `ToxicidadeService`):** aquário só com
+Neon (limite NH₃ = 0,05 × 0,5 = 0,025 mg/L; sensibilidade ALTA), marcado "Já está ciclado". Mesma amônia total 5 ppm:
+- A: pH 6,0, 20 °C → 0,04% tóxica → NH₃ ≈ 0,002 mg/L → sem alerta.
+- B: pH 7,0, 26 °C → 0,60% tóxica → NH₃ ≈ 0,030 mg/L → CRÍTICO.
+(pH e temperatura dentro da faixa do Neon → o único alerta possível é o da amônia.) ~15× mais tóxica.
+Conta: pKa = 0,09018 + 2729,92/(T + 273,15); fração = 1/(1 + 10^(pKa − pH)); NH₃ = fração × amônia total.
+Frase: "o app não compara a amônia total: calcula a fração tóxica (Equações 1 a 3) e compara com o limite da
+sensibilidade de cada espécie". Incluir no script de demonstração (ideia 4).
 
 **Reta final (23/11):** 23–24 = item 5 (visual do protótipo) + Perfil com `GET /usuarios/me` (Claude);
 25 = gráfico (item 9); 26–27 = testes no celular, prints, ensaio (Saulo). Trabalhos futuros: lembretes,
@@ -639,6 +718,30 @@ Dono: **C** = Claude implementa e explica; **S** = Saulo faz (ou revisa, se o te
 - 🐞 Bug corrigido: faltava `idSelecionado` nas dependências do `useCallback` → closure desatualizada (a função
   "lembrava" o aquário antigo; trocar de aquário não recarregava). Regra: TODA variável de fora usada na
   função entra na lista.
+
+**Modal "Novo Registro" (26/11/2026) — Claude fez, FALTA o Saulo revisar e testar.** Como no protótipo: botão
+"+ Novo" em "Registros Diários" abre um painel que sobe de baixo (`ModalNovoRegistro`: `<Modal animationType="slide">`
++ `KeyboardAvoidingView` para o teclado do iPhone; tocar fora ou no X fecha; só fecha sozinho se salvou).
+`RegistroForm` reformulado: campos com rótulo em grade; pH/temperatura/amônia obrigatórios (Equações 1–3); NO₂, NO₃;
+"Parâmetros avançados" GH, KH, CO₂; **salinidade, cálcio e magnésio só quando o aquário é MARINHO** (prop `marinho`) →
+a análise de Ca/Mg do artigo passa a receber dados. Ideia 3 da lista ("Mais parâmetros") ✅.
+
+**Adaptação ao backend novo (26/11/2026) — dividido. Claude (E1–E3) ✅; S1 ✅ (Saulo); S2 ✅ (Claude, a pedido); S3 opcional pendente.**
+- E1 tipos: `Alerta { parametro: ParametroAlerta, mensagem, severidade, recomendacao: string | null }`;
+  `RegistroParametro.alertas`; `NovoRegistroParametro` omite `alertas`; `Aquario.emCiclagem`/`diasMontagem`.
+  `NovoAquario.nivelPlanta` → `nivelPlantas` (o backend mudou o nome; sem isso, criar aquário quebrava).
+- E2 `AlertaItem`: cartão do alerta (cor pela severidade) + "💡 recomendação" (o apoio à decisão). Usado no
+  `DiagnosticoCard` (agora branco com faixa colorida e contagem de alertas).
+- E3 `RegistroCard`: cada valor pintado pela PIOR severidade dos alertas daquele registro com o mesmo `parametro`
+  (verde ok, amarelo atenção, vermelho crítico, cinza não medido) + contagem de alertas. Registros antigos (antes de
+  25/11) não têm alertas salvos → aparecem verdes.
+- S1 (Saulo): `alertasUltimoRegistro = registrosOrdenados.length > 0 ? registrosOrdenados[0].alertas : null` (não usar
+  `lista[0]?.x`: com lista vazia dá `undefined`, e o TS não avisa → `.length` quebrava a tela); `alertasPorAquario`
+  apagado (os alertas vêm do histórico e não somem ao fechar o app). S2 (Claude): o backend agora SOMA a espécie
+  repetida → o hook sempre faz POST e devolve `Alerta[]`; `EspecieCard` mostra "✓ Adicionado, com alerta" + AlertaItem.
+  Obs.: o associar só devolve o alerta de ciclagem; a compatibilidade aparece no diagnóstico (decidido: tudo bem).
+- Antes:
+  S2 associar devolve `Alerta[]` → mostrar no `EspecieCard`; S3 (opcional) usar `emCiclagem`/`diasMontagem` da API.
 
 **Item 10 (25/11/2026): parâmetros ideais — Saulo fez o tipo (com aula), Claude terminou. FALTA TESTAR.**
 - Tipo `ParametrosIdeais { phMin, phMax, tempMin, tempMax }` — nomes IGUAIS aos do JSON (o Saulo tinha escrito

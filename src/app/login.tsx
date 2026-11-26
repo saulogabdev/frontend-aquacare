@@ -40,6 +40,9 @@ export default function Login() {
             {aviso !== "" && erro === "" && <Text style={styles.aviso}>{aviso}</Text>}
             <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
             <TextInput placeholderTextColor={cores.textoFraco} style={styles.campo} placeholder="Senha" secureTextEntry autoCapitalize="none" value={senha} onChangeText={setSenha} />
+            <Link href="/recuperar-senha" replace style={styles.esqueci}>
+                Esqueci minha senha
+            </Link>
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
             <BotaoGradiente texto={carregando ? "Entrando..." : "Entrar"} onPress={() => fazerLogin()} carregando={carregando} />
             <Link href="/cadastro" replace style={styles.link}>
@@ -93,6 +96,11 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         marginTop: 4,
+    },
+    esqueci: {
+        color: cores.textoSecundario,
+        textAlign: "right",
+        fontSize: 13,
     },
     aviso: {
         backgroundColor: "#fef3c7",

@@ -1,5 +1,5 @@
 import { API_URL, apiFetch, erroDaResposta } from "./api";
-import { Animal, AnimalAquario, DadosAnimalAquario } from "@/types";
+import { Alerta, Animal, AnimalAquario, DadosAnimalAquario } from "@/types";
 
 function cabecalhos(token: string) {
     return {
@@ -38,7 +38,7 @@ export async function listarAnimaisDoAquario(token: string, idAquario: number): 
 
 // O backend verifica a compatibilidade com os peixes que já estão no aquário.
 // Se for incompatível, responde 400 com o motivo (ex.: "risco de predação"), e esse texto vira o erro.
-export async function associarAnimal(token: string, dados: DadosAnimalAquario): Promise<void> {
+export async function associarAnimal(token: string, dados: DadosAnimalAquario): Promise<Alerta[]> {
     const response = await apiFetch(`${API_URL}/animal-aquario/associar`, {
         method: "POST",
         headers: cabecalhos(token),
@@ -48,6 +48,9 @@ export async function associarAnimal(token: string, dados: DadosAnimalAquario): 
     if (!response.ok) {
         throw await erroDaResposta(response, "Falha ao adicionar a espécie");
     }
+
+    const alertas: Alerta[] = await response.json();
+    return alertas;
 }
 
 export async function atualizarQuantidade(token: string, idAssociacao: number, dados: DadosAnimalAquario): Promise<void> {

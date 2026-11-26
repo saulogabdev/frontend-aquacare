@@ -3,6 +3,7 @@ import { buscarMeuUsuario, login } from "@/services/usuarioService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { Usuario } from "@/types";
 import { obterToken, salvarToken, removerToken } from "@/services/tokenStorage";
+import { cancelarNotificacoes } from "@/utils/notificacoes";
 
 type AuthContextType = {
     token: string | null,
@@ -45,6 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // useCallback mantém a MESMA função entre os re-renders. Assim, outros Contexts podem
     // colocar o "sair" na lista de dependências de um useEffect sem disparar o efeito toda hora.
     const sair = useCallback(async (aviso: string = "") => {
+        // Este celular não deve avisar lembretes de quem saiu da conta.
+        await cancelarNotificacoes();
         await removerToken();
         setAviso(aviso);
         setToken(null);

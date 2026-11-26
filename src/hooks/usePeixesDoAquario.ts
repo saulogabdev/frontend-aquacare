@@ -1,12 +1,11 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
-import { Animal, AnimalAquario } from "@/types";
+import { Alerta, Animal, AnimalAquario } from "@/types";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useEspecieContext } from "@/contexts/EspecieContext";
 import {
     associarAnimal,
-    atualizarQuantidade,
     listarAnimaisDoAquario,
     removerAnimalDoAquario,
 } from "@/services/especieService";
@@ -57,24 +56,14 @@ export function usePeixesDoAquario() {
         animal: animais.find((a) => a.idAnimal === associacao.idAnimal),
     }));
 
-    // Se a espécie já está no aquário, soma a quantidade (PUT) em vez de criar outra linha (POST).
-    // Erros (ex.: incompatibilidade, 400) sobem para a tela mostrar.
-    async function adicionar(idAnimal: number, quantidade: number): Promise<void> {
+    async function adicionar(idAnimal: number, quantidade: number): Promise<Alerta[]> {
         if (token === null || idSelecionado === null) {
             throw new Error("Selecione um aquário no Dashboard.");
         }
-        const existente = associacoes.find((a) => a.idAnimal === idAnimal);
         try {
-            if (existente) {
-                await atualizarQuantidade(token, existente.id, {
-                    idAnimal,
-                    idAquario: idSelecionado,
-                    quantidade: existente.quantidade + quantidade,
-                });
-            } else {
-                await associarAnimal(token, { idAnimal, idAquario: idSelecionado, quantidade });
-            }
+            const alertas = await associarAnimal(token, { idAnimal, idAquario: idSelecionado, quantidade });
             await recarregar();
+            return alertas;
         } catch (error) {
             if (ehSessaoExpirada(error)) {
                 await sair(MENSAGEM_SESSAO_EXPIRADA);

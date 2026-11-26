@@ -84,7 +84,7 @@ export default function Index() {
         nome: aquarioSelecionado.nome,
         litragem: aquarioSelecionado.litragem,
         tipoAgua: aquarioSelecionado.tipoAgua,
-        nivelPlanta: aquarioSelecionado.nivelPlantas,  
+        nivelPlantas: aquarioSelecionado.nivelPlantas,
         injecaoCO2: aquarioSelecionado.injecaoCO2,
         isCiclado: true,                                  
     });

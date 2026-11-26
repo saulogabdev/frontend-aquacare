@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Cabecalho from "@/components/Cabecalho";
 import { cores } from "@/theme";
+import { useSincronizarLembretesAoAbrir } from "@/hooks/useLembretes";
 
 type NomeIcone = keyof typeof Ionicons.glyphMap;
 
@@ -14,6 +15,9 @@ function icone(cheio: NomeIcone, contorno: NomeIcone) {
 }
 
 export default function TabLayout() {
+    // Ao entrar no app: reagenda neste celular as notificações dos lembretes salvos no servidor.
+    useSincronizarLembretesAoAbrir();
+
     return (
         <Tabs
             screenOptions={{

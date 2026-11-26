@@ -39,11 +39,11 @@ export default function Especies() {
             <TituloTela titulo="Espécies" subtitulo="Catálogo e espécies do seu aquário" />
 
             {/* Aviso (não bloqueio): durante a ciclagem não é indicado adicionar peixes */}
-            {aquarioSelecionado && emCiclagem(aquarioSelecionado) && (
+            {aquarioSelecionado && aquarioSelecionado.emCiclagem && (
                 <View style={styles.avisoCiclagem}>
                     <Ionicons name="warning" size={20} color="#b45309" />
                     <Text style={styles.textoAvisoCiclagem}>
-                        Este aquário está em ciclagem (dia {diasDesde(aquarioSelecionado.dataMontagem)} de {CICLAGEM_DIAS}).
+                        Este aquário está em ciclagem (dia {aquarioSelecionado.diasMontagem} de {CICLAGEM_DIAS}).
                         Não é indicado adicionar animais agora.
                     </Text>
                 </View>

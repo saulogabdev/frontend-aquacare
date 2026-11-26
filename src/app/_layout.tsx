@@ -3,6 +3,10 @@ import { AquarioProvider } from "@/contexts/AquarioContext";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { RegistroProvider } from "@/contexts/RegistroContext";
 import { EspecieProvider } from "@/contexts/EspecieContext";
+import { configurarNotificacoes } from "@/utils/notificacoes";
+
+// Uma vez, ao carregar o app: mostra as notificações mesmo com o app aberto na tela.
+configurarNotificacoes();
 
 function NavegacaoRaiz() {
   const { token, carregando } = useAuthContext();
@@ -19,6 +23,7 @@ function NavegacaoRaiz() {
       <Stack.Protected guard={token === null}>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="cadastro" options={{ headerShown: false }} />
+        <Stack.Screen name="recuperar-senha" options={{ headerShown: false }} />
       </Stack.Protected>
     </Stack>
   )

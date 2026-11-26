@@ -37,7 +37,7 @@ export default function AquarioForm({ onSalvar }: AquarioFormProps) {
             nome: nome.trim(),
             litragem: litros,
             tipoAgua: tipoAgua,
-            nivelPlanta: "BAIXA",
+            nivelPlantas: "BAIXA",
             isCiclado: isCiclado,
             injecaoCO2: false,
         };

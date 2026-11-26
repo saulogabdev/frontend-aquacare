@@ -3,7 +3,8 @@ export type Lembrete = {
   idAquario: number;
   titulo: string;
   dataHoraLembrete: string;
-  isConcluido: boolean;
+  concluido: boolean;
+  notificado: boolean;
 };
 
 export type NovoLembrete = Omit<Lembrete, 'idLembrete'>;
