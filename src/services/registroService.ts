@@ -36,3 +36,30 @@ export async function listarRegistros(token: string, idAquario: number): Promise
     const registros: RegistroParametro[] = await response.json();
     return registros;
 }
+
+// mantem a data e devolve os alertas recalculados
+export async function atualizarRegistro(token: string, idParametro: number, registro: NovoRegistroParametro): Promise<Alerta[]> {
+    const response = await apiFetch(`${API_URL}/registro/${idParametro}`, {
+        method: "PUT",
+        headers: cabecalhos(token),
+        body: JSON.stringify(registro)
+    });
+
+    if (!response.ok) {
+        throw await erroDaResposta(response, "Erro ao atualizar o registro");
+    }
+
+    const alertas: Alerta[] = await response.json();
+    return alertas;
+}
+
+export async function excluirRegistro(token: string, idParametro: number): Promise<void> {
+    const response = await apiFetch(`${API_URL}/registro/${idParametro}`, {
+        method: "DELETE",
+        headers: cabecalhos(token)
+    });
+
+    if (!response.ok) {
+        throw await erroDaResposta(response, "Erro ao excluir o registro");
+    }
+}

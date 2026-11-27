@@ -6,18 +6,15 @@ import { Aquario } from "@/types";
 import { cores, raio } from "@/theme";
 
 type ModalExcluirAquarioProps = {
-    // null = modal fechado. Com um aquário, o modal abre perguntando sobre ELE.
+    // null = fechado
     aquario: Aquario | null;
-    // Chamado só quando o usuário confirma. Se der erro, o modal continua aberto mostrando a mensagem.
     onConfirmar: (aquario: Aquario) => Promise<void>;
     onCancelar: () => void;
 };
 
-// O que o backend apaga junto (exclusão em cascata). Mostrado para o usuário saber o que vai perder.
+// o backend apaga tudo isso em cascata
 const APAGADOS_JUNTO = ["Registros de parâmetros e alertas", "Espécies associadas", "Equipamentos", "Lembretes"];
 
-// Confirmação antes de excluir um aquário: a exclusão é IRREVERSÍVEL e leva todo o histórico.
-// Mesmo padrão do ModalEncerrarCiclagem (Modal em vez de Alert, que não funciona na web).
 export default function ModalExcluirAquario({ aquario, onConfirmar, onCancelar }: ModalExcluirAquarioProps) {
     const [excluindo, setExcluindo] = useState(false);
     const [erro, setErro] = useState("");
@@ -38,7 +35,7 @@ export default function ModalExcluirAquario({ aquario, onConfirmar, onCancelar }
     }
 
     function cancelar() {
-        if (excluindo) return; // não deixa fechar no meio da exclusão
+        if (excluindo) return;
         setErro("");
         onCancelar();
     }

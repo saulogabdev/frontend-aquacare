@@ -5,7 +5,7 @@ import { RegistroProvider } from "@/contexts/RegistroContext";
 import { EspecieProvider } from "@/contexts/EspecieContext";
 import { configurarNotificacoes } from "@/utils/notificacoes";
 
-// Uma vez, ao carregar o app: mostra as notificações mesmo com o app aberto na tela.
+// mostra a notificacao mesmo com o app aberto
 configurarNotificacoes();
 
 function NavegacaoRaiz() {

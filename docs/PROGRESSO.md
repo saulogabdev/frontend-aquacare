@@ -633,6 +633,14 @@ faixas sem sobreposição, Ca/Mg com dados reais.
      adianta 3 h). O PUT do backend substitui tudo: para concluir, manda o lembrete inteiro.
    - No Expo Go a notificação aparece como "Expo Go" (permissão: Ajustes → Expo Go → Notificações).
    - Lint: o `npx expo lint` tem cache em `.expo/cache/eslint`; se acusar algo sem sentido, apagar a pasta.
+7. ✅ **Editar/excluir aquário e registro (26/11).** Excluir aquário depende da cascata do backend (commit do
+   Brayan de 26/11). Form do aquário ganhou nível de plantas e injeção de CO₂ (antes fixos em BAIXA/false).
+   Padrão "estado = o que está aberto" (`aquarioParaEditar`, `registroEditando`...); `key` no form para o
+   `useState` pegar os valores do item certo.
+8. ✅ **Plantas (26/11, para a apresentação de 27/11).** Catálogo via `docs/seed-plantas.sql` (10 plantas; o
+   cadastro é só ADMIN). Aba Espécies com seletor Peixes/Plantas. A API não devolve alertas ao associar planta:
+   a análise (luz por lúmens/L, CO₂, compatibilidade pH/temp com os peixes) aparece no diagnóstico.
+   Demo: HC Cuba em aquário sem CO₂ e sem luminária → 2 alertas; ligar CO₂ no editar aquário → some 1.
 Trabalho futuro "adicionável": regras de CO₂/plantas/iluminação (base de dados já pronta).
 
 **Teste da amônia tóxica para a banca (26/11, conferido com a fórmula do `ToxicidadeService`):** aquário só com

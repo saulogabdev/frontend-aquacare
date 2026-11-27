@@ -4,8 +4,7 @@ import { listarAnimais } from "@/services/especieService";
 import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { useAuthContext } from "./AuthContext";
 
-// Catálogo de espécies: é o mesmo para todos os aquários e é usado por mais de uma tela
-// (aba Espécies e Dashboard), por isso fica num Context e é carregado uma vez só.
+// catalogo e o mesmo para todos os aquarios, carregado uma vez
 type EspecieContextType = {
     animais: Animal[];
     carregando: boolean;

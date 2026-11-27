@@ -1,7 +1,9 @@
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import RegistroForm, { MedicoesRegistro } from "@/components/RegistroForm";
+import { RegistroParametro } from "@/types";
 import { cores } from "@/theme";
+import { formatarDataHora } from "@/utils/formatar";
 
 type ModalNovoRegistroProps = {
     visivel: boolean;
@@ -9,12 +11,11 @@ type ModalNovoRegistroProps = {
     nomeAquario: string;
     onSalvar: (medicoes: MedicoesRegistro) => Promise<void>;
     onFechar: () => void;
+    inicial?: RegistroParametro;
 };
 
-// Painel que sobe de baixo ("bottom sheet"), como no protótipo.
-// É um <Modal> com animação "slide" e o conteúdo colado embaixo da tela.
-export default function ModalNovoRegistro({ visivel, marinho, nomeAquario, onSalvar, onFechar }: ModalNovoRegistroProps) {
-    // Só fecha se salvou; se der erro, o formulário mostra a mensagem e o painel continua aberto.
+export default function ModalNovoRegistro({ visivel, marinho, nomeAquario, onSalvar, onFechar, inicial }: ModalNovoRegistroProps) {
+    // so fecha se salvou
     async function salvar(medicoes: MedicoesRegistro) {
         await onSalvar(medicoes);
         onFechar();
@@ -22,17 +23,18 @@ export default function ModalNovoRegistro({ visivel, marinho, nomeAquario, onSal
 
     return (
         <Modal visible={visivel} transparent animationType="slide" onRequestClose={onFechar}>
-            {/* KeyboardAvoidingView: empurra o painel para cima quando o teclado abre (no iPhone) */}
+            {/* empurra o painel quando o teclado abre (ios) */}
             <KeyboardAvoidingView style={styles.fundo} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-                {/* Tocar na área escura fora do painel também fecha */}
                 <Pressable style={styles.areaFora} onPress={onFechar} />
 
                 <View style={styles.painel}>
                     <View style={styles.alca} />
                     <View style={styles.cabecalho}>
                         <View>
-                            <Text style={styles.titulo}>Novo Registro</Text>
-                            <Text style={styles.subtitulo}>{nomeAquario}</Text>
+                            <Text style={styles.titulo}>{inicial ? "Editar Registro" : "Novo Registro"}</Text>
+                            <Text style={styles.subtitulo}>
+                                {nomeAquario}{inicial ? ` · ${formatarDataHora(inicial.dataHora)}` : ""}
+                            </Text>
                         </View>
                         <Pressable onPress={onFechar} style={styles.fechar} accessibilityLabel="Fechar">
                             <Ionicons name="close" size={22} color={cores.textoSecundario} />
@@ -40,7 +42,14 @@ export default function ModalNovoRegistro({ visivel, marinho, nomeAquario, onSal
                     </View>
 
                     <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
-                        <RegistroForm marinho={marinho} onSalvar={salvar} onCancelar={onFechar} />
+                        {/* key: outro registro recria o formulario com os valores certos */}
+                        <RegistroForm
+                            key={inicial?.idParametro ?? "novo"}
+                            marinho={marinho}
+                            inicial={inicial}
+                            onSalvar={salvar}
+                            onCancelar={onFechar}
+                        />
                     </ScrollView>
                 </View>
             </KeyboardAvoidingView>

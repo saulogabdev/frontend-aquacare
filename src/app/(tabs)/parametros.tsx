@@ -8,7 +8,7 @@ import { useRegistroContext } from "@/contexts/RegistroContext";
 import { MedicoesRegistro } from "@/components/RegistroForm";
 import ModalNovoRegistro from "@/components/ModalNovoRegistro";
 import { LinearGradient } from "expo-linear-gradient";
-import { Alerta, RegistroParametro } from "@/types/registro";
+import { RegistroParametro } from "@/types/registro";
 import { useCallback, useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { listarRegistros } from "@/services/registroService";
@@ -19,14 +19,14 @@ import ParametrosIdeaisCard from "@/components/ParametrosIdeaisCard";
 import AlertaItem from "@/components/AlertaItem";
 
 export default function Parametros() {
-    // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
     const router = useRouter();
     const {aquarios, idSelecionado} = useAquarioContext();
     const {token, sair} = useAuthContext();
     const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
-    const {adicionarRegistro} = useRegistroContext();
-    // O painel "Novo Registro" aparece quando este estado é true.
+    const {adicionarRegistro, editarRegistro, removerRegistro} = useRegistroContext();
     const [mostrarModal, setMostrarModal] = useState(false);
+    // null = nenhum registro em edicao
+    const [registroEditando, setRegistroEditando] = useState<RegistroParametro | null>(null);
     const [registros, setRegistros] = useState<RegistroParametro[]>([]);
     const [carregandoRegistros, setCarregandoRegistros] = useState(false);
     const [erroRegistros, setErroRegistros] = useState<string>("");
@@ -67,6 +67,22 @@ export default function Parametros() {
         await recarregarRegistros();
     }
 
+    async function salvarEdicao(medicoes: MedicoesRegistro) {
+        if (!aquarioSelecionado || !registroEditando) {
+            return;
+        }
+        await editarRegistro(registroEditando.idParametro, {
+            idAquario: aquarioSelecionado.id,
+            ...medicoes
+        });
+        await recarregarRegistros();
+    }
+
+    async function excluirRegistro(idParametro: number) {
+        await removerRegistro(idParametro);
+        await recarregarRegistros();
+    }
+
 
     const registrosOrdenados = [...registros].sort((a, b) => b.dataHora.localeCompare(a.dataHora));
     const alertasUltimoRegistro = registrosOrdenados.length > 0 ? registrosOrdenados[0].alertas : null;
@@ -78,10 +94,8 @@ export default function Parametros() {
                 subtitulo={aquarioSelecionado ? `Qualidade da água · ${aquarioSelecionado.nome}` : "Selecione um aquário no Dashboard"}
             />
 
-            {/* Faixa ideal para as espécies do aquário (GET /aquarios/{id}/parametros-ideais) */}
             {aquarioSelecionado && <ParametrosIdeaisCard idAquario={aquarioSelecionado.id} />}
 
-            {/* Painel "Novo Registro" (abre pelo botão + Novo de "Registros Diários") */}
             {aquarioSelecionado && (
                 <ModalNovoRegistro
                     visivel={mostrarModal}
@@ -92,7 +106,18 @@ export default function Parametros() {
                 />
             )}
 
-            {/* Resultado do último registro: a resposta do POST (alertas da ÁGUA). O diagnóstico geral fica no Dashboard. */}
+            {/* mesmo painel, modo edicao */}
+            {aquarioSelecionado && (
+                <ModalNovoRegistro
+                    visivel={registroEditando !== null}
+                    marinho={aquarioSelecionado.tipoAgua === "MARINHO"}
+                    nomeAquario={aquarioSelecionado.nome}
+                    inicial={registroEditando ?? undefined}
+                    onSalvar={salvarEdicao}
+                    onFechar={() => setRegistroEditando(null)}
+                />
+            )}
+
             {alertasUltimoRegistro !== null && alertasUltimoRegistro.length === 0 && (
                 <View style={[styles.resultado, styles.tudoCerto]}>
                     <Ionicons name="checkmark-circle" size={22} color="#15803d" />
@@ -139,7 +164,12 @@ export default function Parametros() {
                 </Card>
             )}
             {registrosOrdenados.map((registro) => (
-                <RegistroCard key={registro.idParametro} registro={registro} />
+                <RegistroCard
+                    key={registro.idParametro}
+                    registro={registro}
+                    onEditar={() => setRegistroEditando(registro)}
+                    onExcluir={() => excluirRegistro(registro.idParametro)}
+                />
             ))}
         </Tela>
     )

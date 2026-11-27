@@ -25,7 +25,7 @@ export default function AquarioForm({ onSalvar, inicial, onCancelar }: AquarioFo
     const [nome, setNome] = useState(inicial ? inicial.nome : "");
     const [litragem, setLitragem] = useState(inicial ? inicial.litragem.toString() : "");
     const [tipoAgua, setTipoAgua] = useState<TipoAgua>(inicial?.tipoAgua || "DOCE");
-    // Para aquários que já existiam antes do app (montados há tempo): não entram em ciclagem.
+    // aquario antigo ja montado: nao entra em ciclagem
     const [isCiclado, setIsCiclado] = useState(inicial?.isCiclado || false);
     const [nivelPlantas, setNivelPlantas] = useState<NivelPlantas>(inicial?.nivelPlantas || "BAIXA");
     const [injecaoCO2, setInjecaoCO2] = useState(inicial?.injecaoCO2 || false);
@@ -92,7 +92,6 @@ export default function AquarioForm({ onSalvar, inicial, onCancelar }: AquarioFo
                     );
                 })}
             </View>
-            {/* Plantas e CO₂: usados no diagnóstico (iluminação e CO₂ das plantas, backend de 26/11) */}
             <Text style={styles.rotulo}>Quantidade de plantas</Text>
             <View style={styles.opcoes}>
                 {opcoesPlantas.map((opcao) => {
@@ -110,7 +109,6 @@ export default function AquarioForm({ onSalvar, inicial, onCancelar }: AquarioFo
                     );
                 })}
             </View>
-            {/* Liga/desliga: mesmo visual dos botões Doce/Marinho */}
             <Pressable
                 style={[styles.opcao, injecaoCO2 && styles.opcaoSelecionada]}
                 onPress={() => setInjecaoCO2(!injecaoCO2)}
@@ -120,8 +118,7 @@ export default function AquarioForm({ onSalvar, inicial, onCancelar }: AquarioFo
                 </Text>
             </Pressable>
 
-            {/* Só ao CRIAR: na edição, a ciclagem tem o próprio botão no banner ("Encerrar ciclagem"),
-                e o valor atual de isCiclado continua sendo enviado (o estado começou com ele). */}
+            {/* so ao criar: na edicao a ciclagem tem o botao proprio no banner */}
             {!editando && (
                 <Pressable
                     style={[styles.opcao, isCiclado && styles.opcaoSelecionada]}

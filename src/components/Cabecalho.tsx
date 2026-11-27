@@ -6,7 +6,6 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { cores, gradientes, raio } from "@/theme";
 import { iniciais } from "@/utils/formatar";
 
-// Logo: peixe branco num quadrado em degradê. Também é usado no login e no cadastro.
 export function Logo({ tamanho = 36 }: { tamanho?: number }) {
     return (
         <LinearGradient
@@ -20,8 +19,7 @@ export function Logo({ tamanho = 36 }: { tamanho?: number }) {
     );
 }
 
-// Barra do topo de todas as abas: logo + nome à esquerda; iniciais do usuário + sair à direita.
-// useSafeAreaInsets: espaço do "notch"/barra de status, para o cabeçalho não ficar por baixo dela.
+// espaco da barra de status (notch)
 export default function Cabecalho() {
     const { usuario, sair } = useAuthContext();
     const insets = useSafeAreaInsets();

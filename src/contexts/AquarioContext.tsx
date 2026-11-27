@@ -42,7 +42,6 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error) {
                 if (ehSessaoExpirada(error)) {
-                    // Token vencido ou inválido: volta para o login com um aviso.
                     await sair(MENSAGEM_SESSAO_EXPIRADA);
                     return;
                 }
@@ -58,17 +57,15 @@ export function AquarioProvider({ children }: { children: ReactNode }) {
 
 
     
-    // O erro continua subindo para o formulário (que mostra a mensagem e mantém os campos).
-    // O catch só existe para, antes disso, deslogar se a sessão tiver expirado.
+    // o erro sobe para o formulario; o catch so trata a sessao expirada
     async function adicionarAquario(novoAquario: NovoAquario): Promise<void> {
         if (token === null) {
             throw new Error("Usuário não autenticado");
         }
 
         try {
-            // faz a chamada para cadastrar o aquário
             await cadastrarAquario(token, novoAquario);
-            // atualiza a lista de aquarios, ja que a chamada de cadastrar aquario nao retorna o aquario cadastrado
+            // a api nao devolve o aquario cadastrado, entao busca a lista de novo
             const listaAtualizada = await listarMeusAquarios(token);
 
             setAquarios(listaAtualizada);

@@ -11,8 +11,7 @@ type EquipamentoFormProps = {
     onSalvar: (novo: NovoEquipamento) => Promise<void>;
 };
 
-// Cada tipo de equipamento tem UM campo técnico obrigatório (é o que o backend usa no dimensionamento).
-// A "faixa" é só um texto de ajuda com as referências do artigo; quem decide se está certo é o backend.
+// cada tipo tem um campo tecnico obrigatorio, usado no dimensionamento
 export const infoTipo: Record<TipoEquipamento, {
     rotulo: string;
     icone: keyof typeof Ionicons.glyphMap;
@@ -50,7 +49,7 @@ export default function EquipamentoForm({ idAquario, litragem, onSalvar }: Equip
     const [nome, setNome] = useState("");
     const [marca, setMarca] = useState("");
     const [modelo, setModelo] = useState("");
-    const [valor, setValor] = useState(""); // vazão, potência ou lúmens, conforme o tipo
+    const [valor, setValor] = useState("");
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
 
@@ -62,7 +61,6 @@ export default function EquipamentoForm({ idAquario, litragem, onSalvar }: Equip
             setErro("Informe o nome do equipamento.");
             return;
         }
-        // Obrigatório: sem esse valor o backend não consegue calcular o dimensionamento.
         if (!(numero > 0)) {
             setErro(`Informe a ${info.campo.toLowerCase()} (${info.unidade}).`);
             return;
@@ -72,7 +70,7 @@ export default function EquipamentoForm({ idAquario, litragem, onSalvar }: Equip
         setSalvando(true);
         setErro("");
 
-        // Só o campo do tipo escolhido vai preenchido; os outros vão null.
+        // so o campo do tipo escolhido vai preenchido
         const novo: NovoEquipamento = {
             idAquario,
             tipo,
@@ -101,7 +99,6 @@ export default function EquipamentoForm({ idAquario, litragem, onSalvar }: Equip
 
     return (
         <View style={styles.container}>
-            {/* Tipo: ao trocar, o campo técnico muda junto */}
             <View style={styles.tipos}>
                 {tipos.map((t) => {
                     const ativo = t === tipo;

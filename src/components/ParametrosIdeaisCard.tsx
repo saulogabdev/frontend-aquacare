@@ -9,8 +9,7 @@ import { ehSessaoExpirada, MENSAGEM_SESSAO_EXPIRADA } from "@/services/api";
 import { Card, EstadoVazio, MensagemErro } from "@/components/ui";
 import { cores, raio } from "@/theme";
 
-// Faixa ideal de pH e temperatura para TODAS as espécies do aquário ao mesmo tempo (calculada pelo backend).
-// Recarrega ao ganhar foco: se o usuário adicionar uma espécie na aba Espécies e voltar, a faixa muda.
+// intersecao das faixas de todas as especies (calculada no backend)
 export default function ParametrosIdeaisCard({ idAquario }: { idAquario: number }) {
     const { token, sair } = useAuthContext();
     const [ideais, setIdeais] = useState<ParametrosIdeais | null>(null);
@@ -42,8 +41,7 @@ export default function ParametrosIdeaisCard({ idAquario }: { idAquario: number 
         }, [recarregar])
     );
 
-    // Valor calculado: se o mínimo passou do máximo, as espécies não têm uma faixa em comum.
-    // (O backend não avisa; ele só devolve, por exemplo, pH 7.0 – 6.8. Quem percebe é o app.)
+    // minimo maior que o maximo = especies sem faixa em comum (o backend nao avisa)
     const faixaViavel = ideais !== null && ideais.phMin <= ideais.phMax && ideais.tempMin <= ideais.tempMax;
 
     return (
@@ -56,12 +54,10 @@ export default function ParametrosIdeaisCard({ idAquario }: { idAquario: number 
             {carregando && ideais === null && <ActivityIndicator color={cores.primaria} />}
             <MensagemErro texto={erro} />
 
-            {/* 1) Sem espécies (o backend respondeu 400 → null) */}
             {!carregando && erro === "" && ideais === null && (
                 <EstadoVazio icone="fish-outline" titulo="Sem espécies no aquário" texto="Adicione espécies para calcular a faixa ideal." />
             )}
 
-            {/* 2) Faixas que não se cruzam */}
             {ideais !== null && !faixaViavel && (
                 <View style={styles.avisoFaixa}>
                     <Ionicons name="alert-circle" size={22} color="#b91c1c" />
@@ -72,7 +68,6 @@ export default function ParametrosIdeaisCard({ idAquario }: { idAquario: number 
                 </View>
             )}
 
-            {/* 3) Faixa ideal (mesmas cores do RegistroCard: pH ciano, temperatura laranja) */}
             {ideais !== null && faixaViavel && (
                 <>
                     <View style={styles.ideais}>

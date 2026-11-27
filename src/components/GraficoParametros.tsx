@@ -5,7 +5,7 @@ import { RegistroParametro } from "@/types";
 import { Card } from "@/components/ui";
 import { cores, raio } from "@/theme";
 
-// Os parâmetros que o gráfico sabe mostrar (os mesmos do RegistroCard, com as mesmas cores).
+// os parametros que o grafico sabe mostrar (os mesmos do registrocard, com as mesmas cores).
 type ChaveParametro = "ph" | "temperatura" | "amonia" | "nitrito" | "nitrato";
 
 const opcoes: { chave: ChaveParametro; rotulo: string; cor: string; unidade: string }[] = [
@@ -16,40 +16,34 @@ const opcoes: { chave: ChaveParametro; rotulo: string; cor: string; unidade: str
     { chave: "nitrato", rotulo: "NO₃", cor: "#7c3aed", unidade: "ppm" },
 ];
 
-// Medidas do desenho (em pixels). As margens deixam espaço para os números do eixo.
+// medidas do desenho (em pixels). as margens deixam espaco para os numeros do eixo.
 const ALTURA = 170;
 const MARGEM = { esquerda: 36, direita: 12, topo: 12, baixo: 26 };
 
-// "2026-11-18T14:32" -> "18/11"
+// data iso -> dd/mm
 function diaMes(dataHora: string): string {
     const [ano, mes, dia] = dataHora.split("T")[0].split("-");
     return ano ? `${dia}/${mes}` : dataHora;
 }
 
 type GraficoParametrosProps = {
-    // Os registros do aquário, em QUALQUER ordem (o gráfico ordena do mais antigo para o mais novo).
+    // os registros do aquario, em qualquer ordem (o grafico ordena do mais antigo para o mais novo).
     registros: RegistroParametro[];
 };
 
 export default function GraficoParametros({ registros }: GraficoParametrosProps) {
     const [chave, setChave] = useState<ChaveParametro>("ph");
-    // A largura real do card só é conhecida depois que ele aparece na tela (onLayout, lá embaixo).
+    // a largura real do card so e conhecida depois que ele aparece na tela (onlayout, la embaixo).
     const [largura, setLargura] = useState(0);
     const opcao = opcoes.find((o) => o.chave === chave) ?? opcoes[0];
 
-    // ======================================================================
-    // TODO (Saulo) — Passo 2: transformar os registros em pontos do gráfico.
-    // Resultado: lista do mais ANTIGO para o mais NOVO, só com os registros que
-    // têm valor para o parâmetro escolhido (nitrito/nitrato podem ser null).
-    // ======================================================================
+    // registros viram pontos, do mais antigo para o mais novo (ignora valores null)
     const pontos: { dataHora: string; valor: number }[] = registros
         .filter((r) => r[chave] !== null)
         .map((r) => ({ dataHora: r.dataHora, valor: r[chave] as number }))
         .sort((a, b) => a.dataHora.localeCompare(b.dataHora));
 
-    // ======================================================================
-    // TODO (Saulo) — Passo 3: a escala (transformar valor/posição em pixels).
-    // ======================================================================
+    // escala: transforma valor e posicao em pixels
     const valores = pontos.map((p) => p.valor);
     const menor = Math.min(...valores);
     const maior = Math.max(...valores);
@@ -57,29 +51,26 @@ export default function GraficoParametros({ registros }: GraficoParametrosProps)
     const minimo = menor - folga;
     const maximo = maior + folga;
 
-    // índice do ponto (0, 1, 2...) -> posição horizontal em pixels
+    // indice do ponto (0, 1, 2...) -> posicao horizontal em pixels
     function x(indice: number): number {
         const areaUtil = largura - MARGEM.esquerda - MARGEM.direita;
         const espacoEntrePontos = areaUtil / (pontos.length - 1);
         return MARGEM.esquerda + indice * espacoEntrePontos;
     }
 
-    // valor medido (ex.: pH 7.2) -> posição vertical em pixels
+    // valor medido (ex.: ph 7.2) -> posicao vertical em pixels
     function y(valor: number): number {
         const areaUtil = ALTURA - MARGEM.topo - MARGEM.baixo;
         const proporcao = (valor - minimo) / (maximo - minimo);
         return MARGEM.topo + (1 - proporcao) * areaUtil;
     }
 
-    // ======================================================================
-    // TODO (Saulo) — Passo 4: o caminho da linha, no formato do SVG:
-    // "M x0 y0 L x1 y1 L x2 y2 ..."  (M = move a caneta, L = desenha uma linha até)
-    // ======================================================================
+    // caminho da linha no formato do svg (move ate o primeiro ponto e liga os demais)
     const caminho = pontos
     .map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.valor)}`)
     .join(" ");
 
-    // Três linhas de grade: mínimo, meio e máximo do eixo Y.
+    // tres linhas de grade: minimo, meio e maximo do eixo y.
     const grade = [minimo, (minimo + maximo) / 2, maximo];
     const formatar = (v: number) => (chave === "ph" ? v.toFixed(1) : Number.isInteger(v) ? String(v) : v.toFixed(1));
 
@@ -90,7 +81,7 @@ export default function GraficoParametros({ registros }: GraficoParametrosProps)
                 <Text style={styles.contador}>{registros.length} registros</Text>
             </View>
 
-            {/* Botões para escolher o parâmetro */}
+            {/* botoes para escolher o parametro */}
             <View style={styles.opcoes}>
                 {opcoes.map((o) => {
                     const ativo = o.chave === chave;
@@ -116,7 +107,7 @@ export default function GraficoParametros({ registros }: GraficoParametrosProps)
                 <View onLayout={(e) => setLargura(e.nativeEvent.layout.width)}>
                     {largura > 0 && (
                         <Svg width={largura} height={ALTURA}>
-                            {/* Grade horizontal + números do eixo Y */}
+                            {/* grade horizontal + numeros do eixo y */}
                             {grade.map((v, i) => (
                                 <Line
                                     key={`linha-${i}`}
@@ -134,15 +125,15 @@ export default function GraficoParametros({ registros }: GraficoParametrosProps)
                                 </SvgText>
                             ))}
 
-                            {/* A linha */}
+                            {/* a linha */}
                             <Path d={caminho} stroke={opcao.cor} strokeWidth={2.5} fill="none" strokeLinejoin="round" strokeLinecap="round" />
 
-                            {/* Uma bolinha em cada registro */}
+                            {/* uma bolinha em cada registro */}
                             {pontos.map((p, i) => (
                                 <Circle key={i} cx={x(i)} cy={y(p.valor)} r={4} fill={cores.branco} stroke={opcao.cor} strokeWidth={2} />
                             ))}
 
-                            {/* Datas do primeiro e do último registro */}
+                            {/* datas do primeiro e do ultimo registro */}
                             <SvgText x={x(0)} y={ALTURA - 6} fontSize={10} fill={cores.textoFraco} textAnchor="start">
                                 {diaMes(pontos[0].dataHora)}
                             </SvgText>

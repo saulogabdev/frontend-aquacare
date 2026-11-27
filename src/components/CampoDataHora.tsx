@@ -13,10 +13,7 @@ function doisDigitos(numero: number) {
     return String(numero).padStart(2, "0");
 }
 
-// Escolha de dia e hora. Cada sistema tem o seu jeito nativo:
-// - iOS: dois seletores "compactos" na própria tela (tocar abre um calendário/relógio flutuante);
-// - Android: dois botões que abrem as janelas (diálogos) de calendário e de relógio;
-// - Web: a biblioteca não funciona (e notificações também não), então só mostra o valor.
+// seletor nativo de cada sistema: compacto no ios, dialogo no android
 export default function CampoDataHora({ valor, onMudar }: CampoDataHoraProps) {
     const hoje = new Date();
 

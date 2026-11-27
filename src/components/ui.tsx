@@ -1,5 +1,3 @@
-// Peças visuais reaproveitadas em todas as telas (o "kit" do protótipo).
-// Cada tela monta a sua interface com elas, e o visual fica igual no app inteiro.
 import { ReactNode } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,7 +6,6 @@ import { cores, gradientes, raio, sombra } from "@/theme";
 
 type NomeIcone = keyof typeof Ionicons.glyphMap;
 
-// Fundo em degradê + rolagem. Toda tela das abas usa.
 export function Tela({ children }: { children: ReactNode }) {
     return (
         <LinearGradient colors={gradientes.fundo} style={styles.tela}>
@@ -23,7 +20,6 @@ export function Tela({ children }: { children: ReactNode }) {
     );
 }
 
-// Título grande da tela, com subtítulo opcional ("Dashboard" / "Visão geral do seu aquário").
 export function TituloTela({ titulo, subtitulo }: { titulo: string; subtitulo?: string }) {
     return (
         <View style={styles.tituloTela}>
@@ -33,12 +29,10 @@ export function TituloTela({ titulo, subtitulo }: { titulo: string; subtitulo?: 
     );
 }
 
-// Caixa branca arredondada com sombra leve.
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
     return <View style={[styles.card, style]}>{children}</View>;
 }
 
-// Título de um card com um botão de ação opcional à direita ("Meus Aquários"  [+ Novo]).
 export function CabecalhoCard({ titulo, acao, onAcao }: { titulo: string; acao?: string; onAcao?: () => void }) {
     return (
         <View style={styles.cabecalhoCard}>
@@ -55,7 +49,6 @@ export function CabecalhoCard({ titulo, acao, onAcao }: { titulo: string; acao?:
     );
 }
 
-// Botão principal do protótipo: degradê ciano → azul.
 export function BotaoGradiente({ texto, onPress, carregando = false, icone }: {
     texto: string;
     onPress: () => void;
@@ -76,7 +69,6 @@ export function BotaoGradiente({ texto, onPress, carregando = false, icone }: {
     );
 }
 
-// Botão secundário (contorno cinza), ex.: "Cancelar".
 export function BotaoContorno({ texto, onPress }: { texto: string; onPress: () => void }) {
     return (
         <Pressable onPress={onPress} style={styles.botaoContorno}>
@@ -85,7 +77,6 @@ export function BotaoContorno({ texto, onPress }: { texto: string; onPress: () =
     );
 }
 
-// Estado vazio: ícone + título + explicação.
 export function EstadoVazio({ icone, titulo, texto }: { icone: NomeIcone; titulo: string; texto?: string }) {
     return (
         <View style={styles.vazio}>
@@ -98,7 +89,6 @@ export function EstadoVazio({ icone, titulo, texto }: { icone: NomeIcone; titulo
     );
 }
 
-// Mensagem de erro padrão (vermelha).
 export function MensagemErro({ texto }: { texto: string }) {
     if (texto === "") return null;
     return <Text style={styles.erro}>{texto}</Text>;

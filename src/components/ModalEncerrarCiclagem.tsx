@@ -8,13 +8,11 @@ import { CICLAGEM_DIAS } from "@/utils/ciclagem";
 type ModalEncerrarCiclagemProps = {
     visivel: boolean;
     diasMontagem: number;
-    // Chamado só quando o usuário confirma. Se der erro, o modal continua aberto mostrando a mensagem.
     onConfirmar: () => Promise<void>;
     onCancelar: () => void;
 };
 
-// Pop-up de confirmação antes de encerrar a ciclagem antes dos 30 dias.
-// Usa o <Modal> do React Native (e não o Alert.alert) porque os botões do Alert não funcionam na web.
+// modal em vez de alert porque os botoes do alert nao funcionam na web
 export default function ModalEncerrarCiclagem({ visivel, diasMontagem, onConfirmar, onCancelar }: ModalEncerrarCiclagemProps) {
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
@@ -40,7 +38,6 @@ export default function ModalEncerrarCiclagem({ visivel, diasMontagem, onConfirm
 
     return (
         <Modal visible={visivel} transparent animationType="fade" onRequestClose={cancelar}>
-            {/* Fundo escurecido */}
             <View style={styles.fundo}>
                 <View style={styles.caixa}>
                     <ScrollView contentContainerStyle={styles.conteudo}>

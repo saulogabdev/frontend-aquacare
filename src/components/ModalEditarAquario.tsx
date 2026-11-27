@@ -5,19 +5,16 @@ import { Aquario, NovoAquario } from "@/types";
 import { cores } from "@/theme";
 
 type ModalEditarAquarioProps = {
-    // null = fechado. Com um aquário, abre o formulário preenchido com os dados DELE.
+    // null = fechado
     aquario: Aquario | null;
-    // Se der erro (ex.: trocar o tipo de água com espécies), o formulário mostra e o painel continua aberto.
     onSalvar: (aquario: Aquario, dados: NovoAquario) => Promise<void>;
     onFechar: () => void;
 };
 
-// Painel que sobe de baixo, igual ao "Novo Registro".
 export default function ModalEditarAquario({ aquario, onSalvar, onFechar }: ModalEditarAquarioProps) {
     return (
         <Modal visible={aquario !== null} transparent animationType="slide" onRequestClose={onFechar}>
             <KeyboardAvoidingView style={styles.fundo} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-                {/* Tocar na área escura fora do painel também fecha */}
                 <Pressable style={styles.areaFora} onPress={onFechar} />
 
                 <View style={styles.painel}>
@@ -34,9 +31,7 @@ export default function ModalEditarAquario({ aquario, onSalvar, onFechar }: Moda
 
                     <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
                         {aquario && (
-                            // key: o useState do formulário só usa o valor inicial na PRIMEIRA vez que o
-                            // componente aparece. Com a key = id do aquário, editar OUTRO aquário cria um
-                            // formulário novo (e os campos começam com os dados certos).
+                            // key: com outro aquario o formulario e recriado com os valores certos
                             <AquarioForm
                                 key={aquario.id}
                                 inicial={aquario}

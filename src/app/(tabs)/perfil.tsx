@@ -7,7 +7,6 @@ import { Card, Tela, TituloTela } from "@/components/ui";
 import { cores, gradientes, raio } from "@/theme";
 import { formatarData, iniciais } from "@/utils/formatar";
 
-// Uma linha de informação: ícone + rótulo + valor.
 function Linha({ icone, rotulo, valor }: { icone: keyof typeof Ionicons.glyphMap; rotulo: string; valor: string }) {
     return (
         <View style={styles.linha}>
@@ -23,7 +22,6 @@ function Linha({ icone, rotulo, valor }: { icone: keyof typeof Ionicons.glyphMap
 }
 
 export default function Perfil() {
-    // usuario vem do GET /usuarios/me, carregado no AuthContext quando o token muda.
     const { usuario, sair } = useAuthContext();
     const { aquarios } = useAquarioContext();
 

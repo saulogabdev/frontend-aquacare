@@ -10,23 +10,19 @@ import { CabecalhoCard, Card, EstadoVazio, MensagemErro } from "@/components/ui"
 import EquipamentoForm, { infoTipo } from "@/components/EquipamentoForm";
 import { cores, raio } from "@/theme";
 
-// Especificação do equipamento conforme o tipo ("400 L/h", "100 W", "3000 lm").
 function especificacao(e: Equipamento): string {
     if (e.tipo === "FILTRO") return `${e.vazaoLH ?? "—"} L/h`;
     if (e.tipo === "TERMOSTATO") return `${e.potenciaWatts ?? "—"} W`;
     return `${e.lumens ?? "—"} lm`;
 }
 
-// Card de equipamentos do Dashboard. É um componente "autossuficiente": ele mesmo carrega, adiciona e
-// exclui (só o Dashboard usa, então não precisa de Context nem de hook compartilhado).
-export default function EquipamentosCard({ aquario }: { aquario: Aquario }) {
+export default function EquipamentosCard({ aquario, onMudou }: { aquario: Aquario; onMudou?: () => void }) {
     const { token, sair } = useAuthContext();
     const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState("");
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-    // Mesmo padrão do histórico de registros: função com nome, chamada ao ganhar foco E depois de mudar algo.
     const recarregar = useCallback(async () => {
         if (token === null) return;
         setCarregando(true);
@@ -52,7 +48,6 @@ export default function EquipamentosCard({ aquario }: { aquario: Aquario }) {
         }, [recarregar])
     );
 
-    // Erros sobem para o formulário (que mostra a mensagem e mantém os campos).
     async function adicionar(novo: NovoEquipamento) {
         if (token === null) return;
         try {
@@ -65,6 +60,7 @@ export default function EquipamentosCard({ aquario }: { aquario: Aquario }) {
         }
         setMostrarFormulario(false);
         await recarregar();
+        onMudou?.();
     }
 
     async function excluir(idEquipamento: number) {
@@ -73,6 +69,7 @@ export default function EquipamentosCard({ aquario }: { aquario: Aquario }) {
         try {
             await excluirEquipamento(token, idEquipamento);
             await recarregar();
+            onMudou?.();
         } catch (error) {
             if (ehSessaoExpirada(error)) {
                 await sair(MENSAGEM_SESSAO_EXPIRADA);
@@ -117,7 +114,6 @@ export default function EquipamentosCard({ aquario }: { aquario: Aquario }) {
                             {detalhes !== "" && <Text style={styles.detalhes} numberOfLines={1}>{detalhes}</Text>}
                             <View style={styles.selos}>
                                 <Text style={styles.spec}>{especificacao(e)}</Text>
-                                {/* Resultado do DimensionamentoService (regra do artigo) */}
                                 <Text style={[styles.selo, e.dimensionadoCorretamente ? styles.seloOk : styles.seloAtencao]}>
                                     {e.dimensionadoCorretamente ? "✓ Bem dimensionado" : "⚠ Fora da faixa"}
                                 </Text>

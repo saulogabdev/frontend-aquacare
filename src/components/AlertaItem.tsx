@@ -3,8 +3,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Alerta } from "@/types";
 import { raio } from "@/theme";
 
-// Um alerta do SAD: o problema (mensagem) + o que fazer (recomendação).
-// Usado no diagnóstico do Dashboard, nos alertas da aba Parâmetros e ao adicionar uma espécie.
 const cores = {
     CRITICO: { fundo: "#fee2e2", texto: "#b91c1c", rotulo: "Crítico", icone: "alert-circle" as const },
     ATENCAO: { fundo: "#fef3c7", texto: "#b45309", rotulo: "Atenção", icone: "warning" as const },
@@ -21,7 +19,6 @@ export default function AlertaItem({ alerta }: { alerta: Alerta }) {
             </View>
             <Text style={[styles.mensagem, { color: c.texto }]}>{alerta.mensagem}</Text>
 
-            {/* A recomendação: é o "apoio à decisão" — o sistema diz o que fazer, e não só o que está errado */}
             {alerta.recomendacao && (
                 <View style={styles.recomendacao}>
                     <Ionicons name="bulb-outline" size={15} color="#374151" />

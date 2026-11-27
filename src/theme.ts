@@ -1,7 +1,5 @@
-// Cores e medidas do protótipo, num lugar só. As telas importam daqui em vez de repetir "#0891b2".
-// Se a identidade visual mudar, muda aqui e o app inteiro acompanha.
 export const cores = {
-    primaria: "#0891b2",        // ciano (botões, aba ativa)
+    primaria: "#0891b2",
     primariaEscura: "#0e7490",
     primariaClara: "#ecfeff",
     azul: "#2563eb",
@@ -15,11 +13,10 @@ export const cores = {
     perigoClaro: "#fef2f2",
 };
 
-// Pares de cores para o LinearGradient (expo-linear-gradient).
 export const gradientes = {
-    fundo: ["#ecfeff", "#dbeafe"] as const,             // fundo de todas as telas
-    marca: ["#06b6d4", "#2563eb"] as const,             // botões, logo, banner do aquário
-    acaoSecundaria: ["#3b82f6", "#4f46e5"] as const,    // atalho "Ver espécies"
+    fundo: ["#ecfeff", "#dbeafe"] as const,
+    marca: ["#06b6d4", "#2563eb"] as const,
+    acaoSecundaria: ["#3b82f6", "#4f46e5"] as const,
 };
 
 export const raio = {
@@ -28,7 +25,7 @@ export const raio = {
     pilula: 999,
 };
 
-// Sombra leve dos cards. No Android a sombra vem do "elevation"; no iOS e na web, das propriedades shadow*.
+// no android a sombra vem do elevation
 export const sombra = {
     shadowColor: "#0f172a",
     shadowOpacity: 0.06,

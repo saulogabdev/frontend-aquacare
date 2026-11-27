@@ -4,24 +4,47 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Card, EstadoVazio, MensagemErro, Tela, TituloTela } from "@/components/ui";
 import { cores, raio } from "@/theme";
 import EspecieCard from "@/components/EspecieCard";
+import PlantaCard from "@/components/PlantaCard";
 import { useAquarioContext } from "@/contexts/AquarioContext";
 import { useEspecieContext } from "@/contexts/EspecieContext";
 import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
-import { CICLAGEM_DIAS, diasDesde, emCiclagem } from "@/utils/ciclagem";
+import { usePlantasDoAquario } from "@/hooks/usePlantasDoAquario";
+import { CICLAGEM_DIAS } from "@/utils/ciclagem";
 
 export default function Especies() {
     const { aquarios, idSelecionado } = useAquarioContext();
     const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
     const { animais, carregando, erro } = useEspecieContext();
     const { peixes, carregando: carregandoPeixes, erro: erroPeixes, adicionar, remover } = usePeixesDoAquario();
+    const { catalogo, plantas, carregando: carregandoPlantas, erro: erroPlantas, adicionar: adicionarPlanta, remover: removerPlanta } = usePlantasDoAquario();
+    const [aba, setAba] = useState<"peixes" | "plantas">("peixes");
     const [busca, setBusca] = useState("");
     const [erroRemover, setErroRemover] = useState("");
 
-    // Filtro calculado a cada render (não é estado): procura no nome popular e no científico.
     const termo = busca.trim().toLowerCase();
     const animaisFiltrados = animais.filter(
         (a) => a.nomePopular.toLowerCase().includes(termo) || a.nomeCientifico.toLowerCase().includes(termo)
     );
+    const plantasFiltradas = catalogo.filter(
+        (p) => p.nomePopular.toLowerCase().includes(termo) || p.nomeCientifico.toLowerCase().includes(termo)
+    );
+
+    async function removerDoAquario(idAssociacao: number) {
+        setErroRemover("");
+        try {
+            await removerPlanta(idAssociacao);
+        } catch (e) {
+            if (e instanceof Error) {
+                setErroRemover(e.message);
+            }
+        }
+    }
+
+    function trocarAba(nova: "peixes" | "plantas") {
+        setAba(nova);
+        setBusca("");
+        setErroRemover("");
+    }
 
     async function removerPeixe(idAssociacao: number) {
         setErroRemover("");
@@ -38,7 +61,77 @@ export default function Especies() {
         <Tela>
             <TituloTela titulo="Espécies" subtitulo="Catálogo e espécies do seu aquário" />
 
-            {/* Aviso (não bloqueio): durante a ciclagem não é indicado adicionar peixes */}
+            <View style={styles.seletor}>
+                {(["peixes", "plantas"] as const).map((opcao) => {
+                    const ativa = aba === opcao;
+                    return (
+                        <Pressable key={opcao} style={[styles.opcaoSeletor, ativa && styles.opcaoAtiva]} onPress={() => trocarAba(opcao)}>
+                            <Ionicons
+                                name={opcao === "peixes" ? "fish" : "leaf"}
+                                size={16}
+                                color={ativa ? cores.primaria : cores.textoSecundario}
+                            />
+                            <Text style={[styles.textoSeletor, ativa && styles.textoSeletorAtivo]}>
+                                {opcao === "peixes" ? "Peixes" : "Plantas"}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
+            </View>
+
+            {aba === "plantas" && (
+                <>
+                    <Card>
+                        <Text style={styles.tituloSecao}>
+                            {aquarioSelecionado ? `Plantas no ${aquarioSelecionado.nome}` : "Nenhum aquário selecionado"}
+                        </Text>
+                        {carregandoPlantas && plantas.length === 0 && <ActivityIndicator color={cores.primaria} />}
+                        {aquarioSelecionado && !carregandoPlantas && plantas.length === 0 && (
+                            <EstadoVazio icone="leaf-outline" titulo="Nenhuma planta ainda" texto="Adicione pelo catálogo abaixo. O diagnóstico confere luz, CO₂ e compatibilidade com os peixes." />
+                        )}
+                        {plantas.map((item) => (
+                            <View key={item.id} style={styles.linhaPeixe}>
+                                <Ionicons name="leaf" size={18} color="#15803d" />
+                                <Text style={styles.nomePeixe}>
+                                    {item.planta?.nomePopular ?? `Planta #${item.idPlanta}`}
+                                </Text>
+                                <Text style={styles.quantidade}>{item.quantidade} un.</Text>
+                                <Pressable onPress={() => removerDoAquario(item.id)} style={styles.botaoRemover} accessibilityLabel="Remover">
+                                    <Ionicons name="trash-outline" size={18} color={cores.perigo} />
+                                </Pressable>
+                            </View>
+                        ))}
+                        <MensagemErro texto={erroRemover} />
+                    </Card>
+
+                    <View style={styles.busca}>
+                        <Ionicons name="search" size={18} color={cores.textoFraco} />
+                        <TextInput placeholderTextColor={cores.textoFraco}
+                        style={styles.campoBusca}
+                        placeholder="Buscar planta..."
+                        value={busca}
+                        onChangeText={setBusca}
+                        />
+                    </View>
+
+                    <MensagemErro texto={erroPlantas} />
+                    {!carregandoPlantas && erroPlantas === "" && plantasFiltradas.length === 0 && (
+                        <Text style={styles.textoAviso}>Nenhuma planta encontrada.</Text>
+                    )}
+
+                    {plantasFiltradas.map((planta) => (
+                        <PlantaCard
+                            key={planta.idPlanta}
+                            planta={planta}
+                            onAdicionar={aquarioSelecionado ? (quantidade) => adicionarPlanta(planta.idPlanta, quantidade) : undefined}
+                        />
+                    ))}
+                </>
+            )}
+
+            {aba === "peixes" && (
+            <>
+            {/* aviso, nao bloqueio */}
             {aquarioSelecionado && aquarioSelecionado.emCiclagem && (
                 <View style={styles.avisoCiclagem}>
                     <Ionicons name="warning" size={20} color="#b45309" />
@@ -49,7 +142,6 @@ export default function Especies() {
                 </View>
             )}
 
-            {/* Peixes do aquário selecionado */}
             <Card>
                 <Text style={styles.tituloSecao}>
                     {aquarioSelecionado ? `No aquário ${aquarioSelecionado.nome}` : "Nenhum aquário selecionado"}
@@ -74,7 +166,6 @@ export default function Especies() {
                 <MensagemErro texto={erroRemover} />
             </Card>
 
-            {/* Catálogo */}
             <View style={styles.busca}>
                 <Ionicons name="search" size={18} color={cores.textoFraco} />
                 <TextInput placeholderTextColor={cores.textoFraco}
@@ -98,11 +189,39 @@ export default function Especies() {
                     onAdicionar={aquarioSelecionado ? (quantidade) => adicionar(animal.idAnimal, quantidade) : undefined}
                 />
             ))}
+            </>
+            )}
         </Tela>
     );
 }
 
 const styles = StyleSheet.create({
+    seletor: {
+        flexDirection: "row",
+        backgroundColor: cores.bordaClara,
+        borderRadius: raio.pilula,
+        padding: 4,
+        gap: 4,
+    },
+    opcaoSeletor: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        paddingVertical: 8,
+        borderRadius: raio.pilula,
+    },
+    opcaoAtiva: {
+        backgroundColor: cores.branco,
+    },
+    textoSeletor: {
+        color: cores.textoSecundario,
+        fontWeight: "600",
+    },
+    textoSeletorAtivo: {
+        color: cores.primaria,
+    },
     avisoCiclagem: {
         flexDirection: "row",
         alignItems: "center",

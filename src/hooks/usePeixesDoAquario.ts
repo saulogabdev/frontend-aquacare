@@ -43,14 +43,12 @@ export function usePeixesDoAquario() {
         }
     }, [token, idSelecionado, sair]);
 
-    // Recarrega toda vez que a tela que usa o hook aparece (e quando troca o aquário).
     useFocusEffect(
         useCallback(() => {
             recarregar();
         }, [recarregar])
     );
 
-    // Valor calculado (não é estado): cada associação com os dados da espécie.
     const peixes: PeixeDoAquario[] = associacoes.map((associacao) => ({
         ...associacao,
         animal: animais.find((a) => a.idAnimal === associacao.idAnimal),

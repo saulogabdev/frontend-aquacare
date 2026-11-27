@@ -8,8 +8,7 @@ import { cores, gradientes, raio, sombra } from "@/theme";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cadastrarUsuario } from "@/services/usuarioService";
 
-// Validação simples no app, antes de chamar a API: dá uma mensagem clara na hora.
-// (A validação "de verdade" continua no backend: @NotBlank, @Email e e-mail repetido.)
+// validacao basica antes de chamar a api (o backend tambem valida)
 function validar(nome: string, email: string, senha: string, confirmacao: string): string {
     if (nome.trim() === "" || email.trim() === "" || senha === "") {
         return "Preencha nome, e-mail e senha.";
@@ -47,8 +46,7 @@ export default function Cadastro() {
         setErro("");
         try {
             await cadastrarUsuario(nome.trim(), email.trim(), senha);
-            // Conta criada: já entra direto, sem obrigar a digitar tudo de novo no login.
-            // Com o token salvo, o Stack.Protected tira esta tela e mostra as abas.
+            // conta criada: ja faz o login direto
             await entrar(email.trim(), senha);
         } catch (e) {
             if (e instanceof Error) {

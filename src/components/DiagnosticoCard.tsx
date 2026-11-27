@@ -8,7 +8,6 @@ type DiagnosticoCardProps = {
     diagnostico: Diagnostico;
 };
 
-// Cor e texto de cada estado ficam numa tabela, em vez de vários ternários espalhados.
 const aparencia: Record<EstadoAquario, { rotulo: string; fundo: string; texto: string; borda: string; icone: keyof typeof Ionicons.glyphMap }> = {
     SAUDAVEL: { rotulo: "Saudável", fundo: "#dcfce7", texto: "#15803d", borda: "#86efac", icone: "checkmark-circle" },
     ATENCAO: { rotulo: "Atenção", fundo: "#fef3c7", texto: "#b45309", borda: "#fcd34d", icone: "warning" },
@@ -19,7 +18,6 @@ export default function DiagnosticoCard({ diagnostico }: DiagnosticoCardProps) {
     const cores = aparencia[diagnostico.estado];
 
     return (
-        // Card branco com a faixa da esquerda na cor do estado; os alertas (AlertaItem) têm a própria cor.
         <View style={[styles.cartao, { borderLeftColor: cores.texto }]}>
             <Text style={styles.titulo}>Diagnóstico do aquário</Text>
             <View style={[styles.linhaEstado, { backgroundColor: cores.fundo }]}>

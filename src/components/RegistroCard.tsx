@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ParametroAlerta, RegistroParametro, Severidade } from "@/types";
 import { cores, raio, sombra } from "@/theme";
@@ -6,14 +7,14 @@ import { formatarDataHora } from "@/utils/formatar";
 
 type RegistroCardProps = {
     registro: RegistroParametro;
+    onEditar?: () => void;
+    onExcluir?: () => Promise<void>;
 };
 
-// null (não medido) aparece como "—"
 function valor(numero: number | null, sufixo = ""): string {
     return numero === null ? "—" : `${numero}${sufixo}`;
 }
 
-// Cor de cada situação (como no protótipo): verde = ok, amarelo = atenção, vermelho = crítico, cinza = não medido.
 const corStatus = {
     OK: { cor: "#15803d", fundo: "#f0fdf4" },
     ATENCAO: { cor: "#b45309", fundo: "#fffbeb" },
@@ -21,9 +22,26 @@ const corStatus = {
     NAO_MEDIDO: { cor: "#9ca3af", fundo: "#f9fafb" },
 };
 
-export default function RegistroCard({ registro }: RegistroCardProps) {
-    // Pior severidade dos alertas DESTE registro para um parâmetro (o backend diz a qual parâmetro cada alerta
-    // se refere desde 25/11). Ex.: dois alertas de PH, um ATENCAO e um CRITICO → CRITICO.
+export default function RegistroCard({ registro, onEditar, onExcluir }: RegistroCardProps) {
+    const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+    const [excluindo, setExcluindo] = useState(false);
+    const [erro, setErro] = useState("");
+
+    async function excluir() {
+        if (!onExcluir) return;
+        setExcluindo(true);
+        setErro("");
+        try {
+            await onExcluir();
+        } catch (e) {
+            if (e instanceof Error) {
+                setErro(e.message);
+            }
+            setExcluindo(false);
+        }
+    }
+
+    // pior severidade dos alertas deste registro para o parametro
     function status(parametro: ParametroAlerta | null, medido: boolean): keyof typeof corStatus {
         if (!medido) return "NAO_MEDIDO";
         const severidades: Severidade[] = (registro.alertas ?? [])
@@ -34,7 +52,7 @@ export default function RegistroCard({ registro }: RegistroCardProps) {
         return "OK";
     }
 
-    // O nitrato não tem regra no backend (parametro null): fica verde quando medido.
+    // nitrato nao tem regra no backend
     const colunas = [
         { rotulo: "pH", valor: valor(registro.ph), status: status("PH", true) },
         { rotulo: "Temp", valor: valor(registro.temperatura, "°"), status: status("TEMPERATURA", true) },
@@ -54,7 +72,33 @@ export default function RegistroCard({ registro }: RegistroCardProps) {
                         {quantidadeAlertas} {quantidadeAlertas === 1 ? "alerta" : "alertas"}
                     </Text>
                 )}
+                <View style={styles.acoes}>
+                    {onEditar && (
+                        <Pressable onPress={onEditar} hitSlop={8} accessibilityLabel="Editar registro">
+                            <Ionicons name="create-outline" size={20} color={cores.textoFraco} />
+                        </Pressable>
+                    )}
+                    {onExcluir && !confirmandoExclusao && (
+                        <Pressable onPress={() => setConfirmandoExclusao(true)} hitSlop={8} accessibilityLabel="Excluir registro">
+                            <Ionicons name="trash-outline" size={20} color={cores.textoFraco} />
+                        </Pressable>
+                    )}
+                </View>
             </View>
+
+            {/* o alert com botoes nao funciona na web */}
+            {confirmandoExclusao && (
+                <View style={styles.confirmacao}>
+                    <Text style={styles.textoConfirmacao}>Excluir este registro e seus alertas?</Text>
+                    <Pressable onPress={() => setConfirmandoExclusao(false)} disabled={excluindo}>
+                        <Text style={styles.cancelar}>Não</Text>
+                    </Pressable>
+                    <Pressable onPress={excluir} disabled={excluindo}>
+                        <Text style={styles.excluir}>{excluindo ? "Excluindo..." : "Excluir"}</Text>
+                    </Pressable>
+                </View>
+            )}
+            {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
             <View style={styles.colunas}>
                 {colunas.map((coluna) => (
                     <View key={coluna.rotulo} style={[styles.coluna, { backgroundColor: corStatus[coluna.status].fundo }]}>
@@ -80,6 +124,36 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 8,
     },
+    acoes: {
+        flexDirection: "row",
+        gap: 14,
+        marginLeft: 8,
+    },
+    confirmacao: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
+        backgroundColor: cores.perigoClaro,
+        borderRadius: raio.pequeno,
+        padding: 10,
+    },
+    textoConfirmacao: {
+        flex: 1,
+        color: cores.texto,
+        fontSize: 13,
+    },
+    cancelar: {
+        color: cores.textoSecundario,
+        fontWeight: "600",
+    },
+    excluir: {
+        color: cores.perigo,
+        fontWeight: "bold",
+    },
+    erro: {
+        color: cores.perigo,
+        fontSize: 13,
+    },
     contagem: {
         marginLeft: "auto",
         fontSize: 12,
@@ -92,6 +166,7 @@ const styles = StyleSheet.create({
         overflow: "hidden",
     },
     data: {
+        flex: 1,
         fontSize: 16,
         fontWeight: "bold",
         color: cores.texto,

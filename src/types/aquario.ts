@@ -11,7 +11,7 @@ export type Aquario = {
   dataMontagem: string;
   isCiclado: boolean;
   injecaoCO2: boolean;
-  // Calculados pelo backend (25/11): em ciclagem = !isCiclado && menos de 30 dias desde a montagem.
+  // calculados pelo backend
   emCiclagem: boolean;
   diasMontagem: number;
 };
@@ -20,7 +20,7 @@ export type NovoAquario = {
   nome: string;
   litragem: number;
   tipoAgua: TipoAgua;
-  nivelPlantas: NivelPlantas; // mesmo nome da resposta (o backend corrigiu em 25/11)
+  nivelPlantas: NivelPlantas;
   isCiclado: boolean;
   injecaoCO2: boolean;
 };
@@ -35,14 +35,11 @@ export type Equipamento = {
   potenciaWatts: number | null;
   vazaoLH: number | null;
   lumens: number | null;
-  // Calculado pelo backend (DimensionamentoService) com as regras do artigo:
-  // filtro 3–5× o volume por hora; termostato ≥ 1 W/L; iluminação 30–60 lm/L.
+  // regras do artigo: filtro 3-5x o volume/h; termostato >= 1 w/l; luz 30-60 lm/l
   dimensionadoCorretamente: boolean;
 };
 
-// Resposta de GET /aquarios/{id}/parametros-ideais: a interseção das faixas de todas as espécies do aquário
-// (o maior dos mínimos e o menor dos máximos). Os nomes precisam ser IGUAIS aos do JSON da API.
-// Se as faixas não se cruzam, o backend devolve mínimo > máximo (o app detecta e avisa).
+// intersecao das faixas das especies; nomes iguais aos do json
 export type ParametrosIdeais = {
   phMin: number;
   phMax: number;
@@ -50,5 +47,4 @@ export type ParametrosIdeais = {
   tempMax: number;
 };
 
-// Corpo de POST /equipamento/cadastrar e PUT /equipamento/{id} (o dimensionamento é calculado pelo servidor).
 export type NovoEquipamento = Omit<Equipamento, 'idEquipamento' | 'dimensionadoCorretamente'>;

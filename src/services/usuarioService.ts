@@ -30,7 +30,6 @@ export async function cadastrarUsuario(nome: string, email: string, senha: strin
     });
 
     if (!response.ok) {
-        // Ex.: 400 "E-mail já cadastrado." (mensagem do backend)
         throw await erroDaResposta(response, 'Falha ao criar a conta');
     }
 }

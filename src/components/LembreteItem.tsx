@@ -7,23 +7,20 @@ import { deLocalDateTime, descreverDataHora } from "@/utils/dataHora";
 
 type LembreteItemProps = {
     lembrete: Lembrete;
-    // "Agora" vem da tela (Date.now() direto aqui daria um valor diferente a cada redesenho).
+    // vem da tela para o render continuar puro
     agora: number;
     onAlternar: () => Promise<void>;
     onExcluir: () => Promise<void>;
 };
 
-// Uma linha da lista: [círculo de concluir]  título / data   [lixeira]
 export default function LembreteItem({ lembrete, agora, onAlternar, onExcluir }: LembreteItemProps) {
     const [ocupado, setOcupado] = useState(false);
     const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
     const [erro, setErro] = useState("");
 
     const data = deLocalDateTime(lembrete.dataHoraLembrete);
-    // Valor calculado: passou do horário e ainda não foi feito.
     const atrasado = !lembrete.concluido && data.getTime() < agora;
 
-    // Executa a ação, mostrando "ocupado" e o erro, se houver.
     async function executar(acao: () => Promise<void>) {
         setOcupado(true);
         setErro("");
@@ -35,7 +32,6 @@ export default function LembreteItem({ lembrete, agora, onAlternar, onExcluir }:
             }
             setOcupado(false);
         }
-        // No sucesso, a lista recarrega e este item é redesenhado (ou some, se foi excluído).
     }
 
     return (
@@ -68,7 +64,7 @@ export default function LembreteItem({ lembrete, agora, onAlternar, onExcluir }:
                 )}
             </View>
 
-            {/* Confirmação na própria linha (o Alert com botões não funciona na web) */}
+            {/* o alert com botoes nao funciona na web */}
             {confirmandoExclusao && (
                 <View style={styles.confirmacao}>
                     <Text style={styles.textoConfirmacao}>Excluir este lembrete?</Text>

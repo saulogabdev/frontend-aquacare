@@ -51,7 +51,7 @@ export async function buscarDiagnostico(token: string, idAquario: number | null)
         }
     });
     
-    // se a api devolver 400, significa que não há diagnóstico
+    // 400 = sem diagnostico ainda
     if (response.status === 400) {
         return null;
     }
@@ -75,7 +75,7 @@ export async function atualizarAquario(token: string, idAquario: number, dados: 
         throw await erroDaResposta(response, "Falha ao atualizar aquário");
     }
 }
-// 400 = aquário sem espécies (não há o que cruzar). Não é erro: vira null, como no diagnóstico.
+// 400 = aquario sem especies, vira null
 export async function buscarParametrosIdeais(token: string, idAquario: number): Promise<ParametrosIdeais | null> {
     const response = await apiFetch(`${API_URL}/aquarios/${idAquario}/parametros-ideais`, {
         method: 'GET',

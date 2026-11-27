@@ -8,7 +8,6 @@ type AquarioCardProps = {
     aquario: Aquario;
     ativo: boolean;
     onPress: () => void;
-    // Opcionais: enquanto a edição/exclusão não estiver pronta (item 11, Parte B), os botões só avisam "em breve".
     onEditar?: () => void;
     onExcluir?: () => void;
 }
@@ -17,7 +16,6 @@ export default function AquarioCard({ aquario, onPress, ativo, onEditar, onExclu
     const doce = aquario.tipoAgua === "DOCE";
     const [emBreve, setEmBreve] = useState(false);
 
-    // Se a tela passou a função, usa; se não, mostra o aviso "em breve" (para o botão não parecer quebrado).
     function acao(funcao?: () => void) {
         if (funcao) {
             funcao();
@@ -38,7 +36,7 @@ export default function AquarioCard({ aquario, onPress, ativo, onEditar, onExclu
                 </Text>
             </View>
 
-            {/* Botões como no protótipo. O Pressable de dentro "captura" o toque, então não seleciona o card. */}
+            {/* o pressable de dentro captura o toque e nao seleciona o card */}
             <View style={styles.acoes}>
                 <Pressable style={[styles.botaoAcao, styles.botaoEditar]} onPress={() => acao(onEditar)}>
                     <Ionicons name="create-outline" size={15} color="#2563eb" />

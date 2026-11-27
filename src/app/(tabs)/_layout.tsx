@@ -6,7 +6,6 @@ import { useSincronizarLembretesAoAbrir } from "@/hooks/useLembretes";
 
 type NomeIcone = keyof typeof Ionicons.glyphMap;
 
-// Ícone de cada aba: cheio quando a aba está ativa, contorno quando não está.
 function icone(cheio: NomeIcone, contorno: NomeIcone) {
     function IconeAba({ size, focused }: { size: number; focused: boolean }) {
         return <Ionicons name={focused ? cheio : contorno} size={size} color={focused ? cores.primaria : cores.textoFraco} />;
@@ -15,13 +14,12 @@ function icone(cheio: NomeIcone, contorno: NomeIcone) {
 }
 
 export default function TabLayout() {
-    // Ao entrar no app: reagenda neste celular as notificações dos lembretes salvos no servidor.
+    // reagenda as notificacoes dos lembretes ao entrar
     useSincronizarLembretesAoAbrir();
 
     return (
         <Tabs
             screenOptions={{
-                // O mesmo cabeçalho (logo + usuário + sair) em todas as abas.
                 header: () => <Cabecalho />,
                 tabBarActiveTintColor: cores.primaria,
                 tabBarInactiveTintColor: cores.textoFraco,

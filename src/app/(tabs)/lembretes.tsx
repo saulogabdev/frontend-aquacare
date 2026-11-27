@@ -11,7 +11,6 @@ import { raio } from "@/theme";
 import { deLocalDateTime, paraLocalDateTime } from "@/utils/dataHora";
 import { notificacoesPermitidas, pedirPermissaoNotificacoes } from "@/utils/notificacoes";
 
-// Ordena pela data do lembrete (mais cedo primeiro).
 function porData(a: { dataHoraLembrete: string }, b: { dataHoraLembrete: string }) {
     return deLocalDateTime(a.dataHoraLembrete).getTime() - deLocalDateTime(b.dataHoraLembrete).getTime();
 }
@@ -20,14 +19,11 @@ export default function Lembretes() {
     const { aquarios, idSelecionado } = useAquarioContext();
     const { lembretes, carregando, erro, adicionar, alternarConcluido, remover } = useLembretes();
     const [mostrarForm, setMostrarForm] = useState(false);
-    // null = ainda não verificou; false = sem permissão (mostra o aviso); true = tudo certo.
+    // null = ainda nao verificou
     const [permitido, setPermitido] = useState<boolean | null>(null);
-    // "Agora" fica guardado e é atualizado ao abrir a aba: decide o que está "Atrasado".
-    // (O React exige que o desenho da tela seja previsível; Date.now() direto no desenho não é.)
+    // guardado em estado: chamar date.now() direto no render nao e permitido pelo react
     const [agora, setAgora] = useState(Date.now);
 
-    // Toda vez que a aba aparece: atualiza o "agora" e confere a permissão
-    // (o usuário pode ter mudado nas configurações do celular).
     useFocusEffect(
         useCallback(() => {
             setAgora(Date.now());
@@ -48,10 +44,8 @@ export default function Lembretes() {
         );
     }
 
-    // Guardado numa constante: dentro das funções abaixo o TypeScript já sabe que existe.
     const idAquario = aquario.id;
 
-    // Valores calculados a partir da lista (não são estado).
     const doAquario = lembretes.filter((l) => l.idAquario === idAquario);
     const pendentes = doAquario.filter((l) => !l.concluido).sort(porData);
     const concluidos = doAquario.filter((l) => l.concluido).sort(porData).reverse();
@@ -61,14 +55,14 @@ export default function Lembretes() {
     }
 
     async function salvar(titulo: string, data: Date) {
-        // Primeiro lembrete: é a hora certa de pedir a permissão (o usuário entende o porquê).
+        // pede a permissao no primeiro lembrete
         if (permitido === false) {
             await ativarNotificacoes();
         }
         await adicionar({
             idAquario,
             titulo,
-            dataHoraLembrete: paraLocalDateTime(data), // "2026-11-27T18:00:00", sem fuso
+            dataHoraLembrete: paraLocalDateTime(data), // sem fuso
             concluido: false,
             notificado: false,
         });

@@ -7,7 +7,6 @@ import { cancelarNotificacoes } from "@/utils/notificacoes";
 
 type AuthContextType = {
     token: string | null,
-    // Dados do usuário logado (GET /usuarios/me): nome no cabeçalho e no Perfil, e a role (admin).
     usuario: Usuario | null,
     carregando: boolean,
     aviso: string,
@@ -20,7 +19,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState<string | null>(null);
     const [carregando, setCarregando] = useState<boolean>(true);
-    // Mensagem mostrada na tela de login depois de uma saída automática (ex.: sessão expirada).
     const [aviso, setAviso] = useState("");
     const [usuario, setUsuario] = useState<Usuario | null>(null);
 
@@ -43,17 +41,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(token);
     }
 
-    // useCallback mantém a MESMA função entre os re-renders. Assim, outros Contexts podem
-    // colocar o "sair" na lista de dependências de um useEffect sem disparar o efeito toda hora.
+    // mesma funcao entre renders, para poder entrar nas dependencias de efeitos
     const sair = useCallback(async (aviso: string = "") => {
-        // Este celular não deve avisar lembretes de quem saiu da conta.
+        // cancela as notificacoes de quem saiu
         await cancelarNotificacoes();
         await removerToken();
         setAviso(aviso);
         setToken(null);
     }, []);
 
-    // Sempre que o token muda (entrou ou saiu), busca os dados do usuário logado.
     useEffect(() => {
         async function carregarUsuario() {
             if (token === null) {
@@ -66,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (ehSessaoExpirada(error)) {
                     await sair(MENSAGEM_SESSAO_EXPIRADA);
                 }
-                // Outros erros (ex.: sem conexão): o app continua funcionando, só sem o nome.
+                // sem conexao: o app segue funcionando, so sem o nome
             }
         }
         carregarUsuario();

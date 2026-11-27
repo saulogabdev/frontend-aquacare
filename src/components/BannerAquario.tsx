@@ -16,11 +16,9 @@ const rotuloPlantas: Record<NivelPlantas, string> = {
 
 type BannerAquarioProps = {
     aquario: Aquario;
-    // Promise: o pop-up espera o PUT terminar (e mostra o erro, se falhar) antes de fechar.
     onEncerrarCiclagem: () => Promise<void>;
 };
 
-// Etiqueta translúcida dentro do banner ("Ciclado", "CO₂ ativo"...).
 function Chip({ icone, texto }: { icone: keyof typeof Ionicons.glyphMap; texto: string }) {
     return (
         <View style={styles.chip}>
@@ -30,9 +28,7 @@ function Chip({ icone, texto }: { icone: keyof typeof Ionicons.glyphMap; texto: 
     );
 }
 
-// Banner em degradê do aquário ativo (topo do Dashboard, como no protótipo).
 export default function BannerAquario({ aquario, onEncerrarCiclagem }: BannerAquarioProps) {
-    // O pop-up aparece quando este estado é true (o "visible" do Modal é controlado por estado).
     const [mostrarModal, setMostrarModal] = useState(false);
     const ciclando = aquario.emCiclagem;
 
@@ -48,7 +44,6 @@ export default function BannerAquario({ aquario, onEncerrarCiclagem }: BannerAqu
                 <Chip icone="leaf" texto={`Plantas: ${rotuloPlantas[aquario.nivelPlantas]}`} />
             </View>
 
-            {/* Só aparece durante a ciclagem: abre o pop-up de confirmação */}
             {ciclando && (
                 <Pressable style={styles.botaoCiclagem} onPress={() => setMostrarModal(true)}>
                     <Ionicons name="checkmark-done" size={16} color={cores.primariaEscura} />
@@ -61,8 +56,8 @@ export default function BannerAquario({ aquario, onEncerrarCiclagem }: BannerAqu
                 diasMontagem={diasDesde(aquario.dataMontagem)}
                 onCancelar={() => setMostrarModal(false)}
                 onConfirmar={async () => {
-                    await onEncerrarCiclagem(); // faz o PUT; se der erro, o modal mostra e continua aberto
-                    setMostrarModal(false);     // só fecha se deu certo
+                    await onEncerrarCiclagem();
+                    setMostrarModal(false);
                 }}
             />
         </LinearGradient>

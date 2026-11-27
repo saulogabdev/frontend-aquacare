@@ -6,8 +6,7 @@ import { cores, sombra } from "@/theme";
 
 type EspecieCardProps = {
     animal: Animal;
-    // undefined = não há aquário selecionado (o botão de adicionar não aparece).
-    // Devolve os alertas da associação (ex.: "aquário em ciclagem"), que o card mostra.
+    // undefined = sem aquario selecionado
     onAdicionar?: (quantidade: number) => Promise<Alerta[]>;
 };
 
@@ -28,7 +27,6 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
     const [quantidade, setQuantidade] = useState("");
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
-    // Alertas da última vez que esta espécie foi adicionada (a espécie É adicionada; o alerta só informa).
     const [alertas, setAlertas] = useState<Alerta[]>([]);
 
     async function confirmar() {
@@ -109,7 +107,7 @@ export default function EspecieCard({ animal, onAdicionar }: EspecieCardProps) {
 
             {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
-            {/* Adicionado, mas com ressalvas: o SAD avisa e deixa o usuário decidir */}
+            {/* adicionado com alertas: o sad avisa e o usuario decide */}
             {alertas.length > 0 && (
                 <View style={styles.alertas}>
                     <Text style={styles.adicionado}>✓ Adicionado ao aquário, com {alertas.length === 1 ? "um alerta" : "alertas"}:</Text>

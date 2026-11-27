@@ -5,9 +5,8 @@ import { BotaoContorno, BotaoGradiente, MensagemErro } from "@/components/ui";
 import { cores, raio } from "@/theme";
 import { proximaHoraCheia } from "@/utils/dataHora";
 
-// Tarefas comuns de manutenção: um toque preenche o título.
 const SUGESTOES = ["Trocar parte da água", "Testar parâmetros", "Limpar o filtro", "Fertilizar as plantas"];
-const TAMANHO_MAXIMO = 100; // a coluna "titulo" no banco tem length = 100
+const TAMANHO_MAXIMO = 100; // a coluna titulo no banco tem tamanho 100
 
 type LembreteFormProps = {
     onSalvar: (titulo: string, data: Date) => Promise<void>;
@@ -21,7 +20,7 @@ export default function LembreteForm({ onSalvar, onCancelar }: LembreteFormProps
     const [erro, setErro] = useState("");
 
     async function salvar() {
-        // O backend não valida o título nem a data: o app garante o básico antes de enviar.
+        // o backend nao valida titulo nem data
         if (titulo.trim() === "") {
             setErro("Informe o que precisa ser feito.");
             return;

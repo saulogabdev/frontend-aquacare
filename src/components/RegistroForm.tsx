@@ -1,20 +1,20 @@
 import { View, TextInput, Text, StyleSheet, Keyboard, KeyboardTypeOptions } from "react-native";
 import { cores, raio } from "@/theme";
 import { useState } from "react";
-import { NovoRegistroParametro } from "@/types";
+import { NovoRegistroParametro, RegistroParametro } from "@/types";
 import { BotaoContorno, BotaoGradiente, MensagemErro } from "@/components/ui";
 
-// O que o formulário sabe: só as medições. Quem completa com o aquário é a tela; a data, o servidor.
 export type MedicoesRegistro = Omit<NovoRegistroParametro, "idAquario">;
 
 type RegistroFormProps = {
-    // Aquário marinho mostra também salinidade, cálcio e magnésio (o backend só os analisa no marinho).
+    // marinho mostra tambem salinidade, calcio e magnesio
     marinho: boolean;
     onSalvar: (medicoes: MedicoesRegistro) => Promise<void>;
     onCancelar?: () => void;
+    inicial?: RegistroParametro;
 };
 
-// "" → null (campo opcional vazio); "7,2" → 7.2; texto inválido → null.
+// "" -> null; "7,2" -> 7.2; invalido -> null
 function paraNumero(valor: string): number | null {
     valor = valor.replace(",", ".");
     if (valor.trim() === "") {
@@ -27,7 +27,12 @@ function paraNumero(valor: string): number | null {
     return numero;
 }
 
-// Um campo com rótulo em cima (como no protótipo). Fica fora do componente principal para não ser recriado a cada tecla.
+// null -> "" para o campo nao mostrar null
+function paraTexto(numero: number | null | undefined): string {
+    return numero === null || numero === undefined ? "" : String(numero);
+}
+
+// fora do componente para nao ser recriado a cada tecla
 function Campo({ rotulo, valor, onMudar, teclado = "decimal-pad" }: {
     rotulo: string;
     valor: string;
@@ -48,21 +53,22 @@ function Campo({ rotulo, valor, onMudar, teclado = "decimal-pad" }: {
     );
 }
 
-export default function RegistroForm({ marinho, onSalvar, onCancelar }: RegistroFormProps) {
-    // Obrigatórios (entram nas Equações 1 a 3 da amônia tóxica)
-    const [ph, setPh] = useState("");
-    const [temperatura, setTemperatura] = useState("");
-    const [amonia, setAmonia] = useState("");
-    // Opcionais
-    const [nitrito, setNitrito] = useState("");
-    const [nitrato, setNitrato] = useState("");
-    const [gh, setGh] = useState("");
-    const [kh, setKh] = useState("");
-    const [co2, setCo2] = useState("");
-    // Só marinho
-    const [salinidade, setSalinidade] = useState("");
-    const [calcio, setCalcio] = useState("");
-    const [magnesio, setMagnesio] = useState("");
+export default function RegistroForm({ marinho, onSalvar, onCancelar, inicial }: RegistroFormProps) {
+    const editando = inicial !== undefined;
+    // obrigatorios (usados no calculo da amonia toxica)
+    const [ph, setPh] = useState(paraTexto(inicial?.ph));
+    const [temperatura, setTemperatura] = useState(paraTexto(inicial?.temperatura));
+    const [amonia, setAmonia] = useState(paraTexto(inicial?.amonia));
+    // opcionais
+    const [nitrito, setNitrito] = useState(paraTexto(inicial?.nitrito));
+    const [nitrato, setNitrato] = useState(paraTexto(inicial?.nitrato));
+    const [gh, setGh] = useState(paraTexto(inicial?.gh));
+    const [kh, setKh] = useState(paraTexto(inicial?.kh));
+    const [co2, setCo2] = useState(paraTexto(inicial?.co2));
+    // so marinho
+    const [salinidade, setSalinidade] = useState(paraTexto(inicial?.salinidade));
+    const [calcio, setCalcio] = useState(paraTexto(inicial?.calcio));
+    const [magnesio, setMagnesio] = useState(paraTexto(inicial?.magnesio));
 
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
@@ -95,7 +101,6 @@ export default function RegistroForm({ marinho, onSalvar, onCancelar }: Registro
             gh: paraNumero(gh),
             kh: paraNumero(kh),
             co2: paraNumero(co2),
-            // Em água doce esses campos nem aparecem: vão sempre null.
             salinidade: marinho ? paraNumero(salinidade) : null,
             calcio: marinho ? paraNumero(calcio) : null,
             magnesio: marinho ? paraNumero(magnesio) : null,
@@ -103,8 +108,10 @@ export default function RegistroForm({ marinho, onSalvar, onCancelar }: Registro
 
         try {
             await onSalvar(medicoes);
-            // Só limpa os campos se salvou de verdade; se falhar, o usuário não perde o que digitou.
-            limpar();
+            // so limpa se salvou; na edicao o painel fecha
+            if (!editando) {
+                limpar();
+            }
         } catch (e) {
             if (e instanceof Error) {
                 setErro(e.message);
@@ -126,7 +133,6 @@ export default function RegistroForm({ marinho, onSalvar, onCancelar }: Registro
                 <Campo rotulo="NO₃ (ppm)" valor={nitrato} onMudar={setNitrato} />
             </View>
 
-            {/* Divisória, como no protótipo */}
             <View style={styles.divisoria}>
                 <Text style={styles.textoDivisoria}>Parâmetros avançados</Text>
                 <View style={styles.traco} />
@@ -156,7 +162,7 @@ export default function RegistroForm({ marinho, onSalvar, onCancelar }: Registro
                     </View>
                 )}
                 <View style={styles.botao}>
-                    <BotaoGradiente texto={salvando ? "Salvando..." : "Salvar"} onPress={salvarRegistro} carregando={salvando} icone="checkmark" />
+                    <BotaoGradiente texto={salvando ? "Salvando..." : editando ? "Salvar alterações" : "Salvar"} onPress={salvarRegistro} carregando={salvando} icone="checkmark" />
                 </View>
             </View>
         </View>

@@ -8,13 +8,9 @@ import { BotaoGradiente } from "@/components/ui";
 import { cores, gradientes, raio, sombra } from "@/theme";
 import { redefinirSenha, solicitarRecuperacaoSenha } from "@/services/usuarioService";
 
-// A tela tem 3 etapas, controladas por um único estado (parecido com um enum em Java):
-// "email"   → o usuário informa o e-mail e pede o código;
-// "codigo"  → cola o código recebido e escolhe a nova senha;
-// "pronto"  → senha trocada, só falta voltar ao login.
+// etapas: email -> codigo -> pronto
 type Etapa = "email" | "codigo" | "pronto";
 
-// Mesmas regras de senha do cadastro, para não aceitar aqui uma senha que lá seria recusada.
 function validarNovaSenha(codigo: string, senha: string, confirmacao: string): string {
     if (codigo === "" || senha === "") {
         return "Informe o código e a nova senha.";
@@ -49,7 +45,6 @@ export default function RecuperarSenha() {
             await solicitarRecuperacaoSenha(email.trim());
             setEtapa("codigo");
         } catch (e) {
-            // Ex.: 400 "Email não encontrado." (mensagem do backend)
             if (e instanceof Error) {
                 setErro(e.message);
             }
@@ -59,7 +54,7 @@ export default function RecuperarSenha() {
     }
 
     async function trocarSenha() {
-        // O código vem colado do e-mail: tira espaços e quebras de linha que vierem junto.
+        // tira espacos e quebras de linha do codigo colado
         const codigoLimpo = codigo.replace(/\s/g, "");
         const mensagem = validarNovaSenha(codigoLimpo, senha, confirmacao);
         if (mensagem !== "") {
@@ -73,7 +68,6 @@ export default function RecuperarSenha() {
             await redefinirSenha(codigoLimpo, senha);
             setEtapa("pronto");
         } catch (e) {
-            // Ex.: 404 "Token não encontrado." ou 400 "Token foi expirado ou já foi usado."
             if (e instanceof Error) {
                 setErro(e.message);
             }
@@ -82,7 +76,6 @@ export default function RecuperarSenha() {
         }
     }
 
-    // Volta para a etapa do e-mail (código expirou, não chegou, e-mail digitado errado...).
     function pedirOutroCodigo() {
         setEtapa("email");
         setCodigo("");
@@ -132,7 +125,6 @@ export default function RecuperarSenha() {
                 </View>
             )}
 
-            {/* replace: troca a tela em vez de empilhar, igual entre login e cadastro */}
             <Link href="/login" replace style={styles.link}>
                 {etapa === "pronto" ? "Ir para o login" : "Lembrei a senha. Entrar"}
             </Link>

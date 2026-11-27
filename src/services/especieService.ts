@@ -36,8 +36,7 @@ export async function listarAnimaisDoAquario(token: string, idAquario: number): 
     return associacoes;
 }
 
-// O backend verifica a compatibilidade com os peixes que já estão no aquário.
-// Se for incompatível, responde 400 com o motivo (ex.: "risco de predação"), e esse texto vira o erro.
+// incompatibilidade vem como 400 com o motivo
 export async function associarAnimal(token: string, dados: DadosAnimalAquario): Promise<Alerta[]> {
     const response = await apiFetch(`${API_URL}/animal-aquario/associar`, {
         method: "POST",

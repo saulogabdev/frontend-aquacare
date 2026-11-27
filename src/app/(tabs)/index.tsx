@@ -19,9 +19,9 @@ import DiagnosticoCard from "@/components/DiagnosticoCard";
 import ModalExcluirAquario from "@/components/ModalExcluirAquario";
 import ModalEditarAquario from "@/components/ModalEditarAquario";
 import { usePeixesDoAquario } from "@/hooks/usePeixesDoAquario";
+import { usePlantasDoAquario } from "@/hooks/usePlantasDoAquario";
 
 export default function Index() {
-    // SDK 58: o recomendado é pegar o router pelo hook, e não importar o objeto "router" direto.
     const router = useRouter();
   const { aquarios, idSelecionado, adicionarAquario, selecionarAquario, erro, carregando, editarAquario, removerAquario } = useAquarioContext();
   const aquarioSelecionado = aquarios.find((a) => a.id === idSelecionado);
@@ -31,22 +31,46 @@ export default function Index() {
   const [erroDiagnostico, setErroDiagnostico] = useState("");
   const { token, sair } = useAuthContext();
   const { peixes, remover } = usePeixesDoAquario();
+  const { plantas, remover: removerPlanta } = usePlantasDoAquario();
   const [erroRemover, setErroRemover] = useState("");
-  // O formulário de novo aquário só aparece ao tocar em "+ Novo" (como no protótipo).
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  // Aquário que o usuário pediu para excluir (abre o modal de confirmação); null = modal fechado.
+  // null = modal fechado
   const [aquarioParaExcluir, setAquarioParaExcluir] = useState<Aquario | null>(null);
-  // Mesmo truque para a edição: o aquário guardado aqui abre o painel "Editar aquário".
   const [aquarioParaEditar, setAquarioParaEditar] = useState<Aquario | null>(null);
-  // Soma das quantidades de todas as espécies (valor calculado).
   const totalPeixes = peixes.reduce((soma, peixe) => soma + peixe.quantidade, 0);
 
-  // Cria o aquário e fecha o formulário. Se der erro, o formulário continua aberto mostrando a mensagem.
-  // Remove a espécie do aquário (mesmo "remover" da aba Espécies, vindo do hook). O erro aparece no card.
+  // recarrega o diagnostico tambem depois de alteracoes feitas nesta tela
+  const recarregarDiagnostico = useCallback(async () => {
+    if (token === null) return;
+    setCarregandoDiagnostico(true);
+    setErroDiagnostico("");
+    try {
+      const novoDiagnostico = await buscarDiagnostico(token, idSelecionado);
+      setDiagnostico(novoDiagnostico);
+    } catch (error) {
+      if (ehSessaoExpirada(error)) {
+        await sair(MENSAGEM_SESSAO_EXPIRADA);
+        return;
+      }
+      if (error instanceof Error) {
+        setErroDiagnostico(error.message);
+      }
+    } finally {
+      setCarregandoDiagnostico(false);
+    }
+  }, [token, sair, idSelecionado]);
+
+  useFocusEffect(
+    useCallback(() => {
+      recarregarDiagnostico();
+    }, [recarregarDiagnostico])
+  );
+
   async function removerPeixe(idAssociacao: number) {
     setErroRemover("");
     try {
       await remover(idAssociacao);
+      await recarregarDiagnostico();
     } catch (error) {
       if (error instanceof Error) {
         setErroRemover(error.message);
@@ -54,16 +78,27 @@ export default function Index() {
     }
   }
 
-  // Só roda depois da confirmação no modal. Se der erro, ele sobe e o modal mostra (e continua aberto).
   async function excluirAquario(aquario: Aquario) {
     await removerAquario(aquario.id);
     setAquarioParaExcluir(null);
   }
 
-  // Se o PUT falhar, o erro sobe, o formulário mostra a mensagem e o painel continua aberto.
   async function salvarEdicao(aquario: Aquario, dados: NovoAquario) {
     await editarAquario(aquario.id, dados);
     setAquarioParaEditar(null);
+    await recarregarDiagnostico();
+  }
+
+  async function removerPlantaDoAquario(idAssociacao: number) {
+    setErroRemover("");
+    try {
+      await removerPlanta(idAssociacao);
+      await recarregarDiagnostico();
+    } catch (error) {
+      if (error instanceof Error) {
+        setErroRemover(error.message);
+      }
+    }
   }
 
   async function criarAquario(novo: NovoAquario) {
@@ -71,30 +106,6 @@ export default function Index() {
     setMostrarFormulario(false);
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      async function carregarDiagnostico() {
-        if (token === null) return;
-        setCarregandoDiagnostico(true);
-        setErroDiagnostico("");
-        try {
-          const novoDiagnostico = await buscarDiagnostico(token, idSelecionado);
-          setDiagnostico(novoDiagnostico);
-        } catch (error) {
-          if (ehSessaoExpirada(error)) {
-            await sair(MENSAGEM_SESSAO_EXPIRADA);
-            return;
-          }
-          if (error instanceof Error) {
-            setErroDiagnostico(error.message);
-          }
-        } finally {
-          setCarregandoDiagnostico(false);
-        }
-      }
-      carregarDiagnostico();
-    }, [token, sair, idSelecionado])
-  );
 
   async function encerrarCiclagem() {
     if (!aquarioSelecionado) return;
@@ -104,15 +115,16 @@ export default function Index() {
         tipoAgua: aquarioSelecionado.tipoAgua,
         nivelPlantas: aquarioSelecionado.nivelPlantas,
         injecaoCO2: aquarioSelecionado.injecaoCO2,
-        isCiclado: true,                                  
+        isCiclado: true,
     });
+    await recarregarDiagnostico();
 }
 
   return (
     <Tela>
       <TituloTela titulo="Dashboard" subtitulo="Visão geral do seu aquário" />
 
-      {/* Meus aquários */}
+      {/* meus aquarios */}
       <Card>
         <CabecalhoCard
           titulo="Meus Aquários"
@@ -142,7 +154,7 @@ export default function Index() {
         <>
           <BannerAquario aquario={aquarioSelecionado} onEncerrarCiclagem={encerrarCiclagem} />
 
-          {/* Diagnóstico (SAD): estado geral + alertas */}
+          {/* diagnostico */}
           {carregandoDiagnostico && !diagnostico && <ActivityIndicator color={cores.primaria} />}
           <MensagemErro texto={erroDiagnostico} />
           {diagnostico ? (
@@ -155,10 +167,10 @@ export default function Index() {
             )
           )}
 
-          {/* Espécies do aquário */}
+          {/* especies do aquario */}
           <Card>
             <CabecalhoCard titulo="Espécies do Aquário" acao="Adicionar" onAcao={() => router.push("/especies")} />
-            {peixes.length === 0 ? (
+            {peixes.length === 0 && plantas.length === 0 ? (
               <EstadoVazio icone="fish-outline" titulo="Nenhuma espécie adicionada" texto="Sem espécies, o diagnóstico não consegue avaliar a água." />
             ) : (
               peixes.map((peixe) => (
@@ -177,13 +189,27 @@ export default function Index() {
                 </View>
               ))
             )}
+            {plantas.map((item) => (
+              <View key={`planta-${item.id}`} style={styles.linhaPeixe}>
+                <View style={[styles.iconePeixe, { backgroundColor: "#dcfce7" }]}>
+                  <Ionicons name="leaf" size={22} color="#15803d" />
+                </View>
+                <View style={styles.textosPeixe}>
+                  <Text style={styles.nomePeixe}>{item.planta?.nomePopular ?? `Planta #${item.idPlanta}`}</Text>
+                  {item.planta && <Text style={styles.cientifico}>{item.planta.nomeCientifico}</Text>}
+                  <Text style={styles.quantidade}>Quantidade: {item.quantidade}</Text>
+                </View>
+                <Pressable onPress={() => removerPlantaDoAquario(item.id)} style={styles.botaoRemover} accessibilityLabel="Remover planta">
+                  <Ionicons name="trash-outline" size={18} color={cores.perigo} />
+                </Pressable>
+              </View>
+            ))}
             <MensagemErro texto={erroRemover} />
           </Card>
 
-          {/* Equipamentos + dimensionamento (regra do artigo, calculada pelo backend) */}
-          <EquipamentosCard aquario={aquarioSelecionado} />
+          {/* equipamentos */}
+          <EquipamentosCard aquario={aquarioSelecionado} onMudou={recarregarDiagnostico} />
 
-          {/* Números */}
           <View style={styles.grade}>
             <View style={styles.estatistica}>
               <View>
@@ -205,7 +231,7 @@ export default function Index() {
             </View>
           </View>
 
-          {/* Atalhos */}
+          {/* atalhos */}
           <View style={styles.grade}>
             <Pressable style={styles.atalhoArea} onPress={() => router.push("/parametros")}>
               <LinearGradient colors={gradientes.marca} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.atalho}>
@@ -228,6 +254,7 @@ export default function Index() {
         onConfirmar={excluirAquario}
         onCancelar={() => setAquarioParaExcluir(null)}
       />
+      
       <ModalEditarAquario
         aquario={aquarioParaEditar}
         onSalvar={salvarEdicao}
